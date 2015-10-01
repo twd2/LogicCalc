@@ -1,0 +1,16 @@
+*.suo
+*.opensdf
+*.sdf
+*.pch
+*.aps
+*.user
+*.cache
+x64
+Debug
+Release
+ipch
+bin
+obj
+*.exe
+*.vsp
+*.psess
