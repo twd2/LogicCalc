@@ -212,7 +212,7 @@ bool Lexer::nextIs(char what)
 	return hasNext() && data[index + 1] == what;
 }
 
-bool Lexer::isReserved(std::string str)
+bool Lexer::isReserved(std::string &str)
 {
 	return false;
 }

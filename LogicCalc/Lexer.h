@@ -8,7 +8,7 @@
 class Lexer
 {
 public:
-	Lexer(std::string& str) : data(str)
+	Lexer(std::string &str) : data(str)
 	{
 		length = str.length();
 	}
@@ -17,14 +17,14 @@ public:
 	std::vector<Token> Do();
 
 private:
-	std::string& data;
+	std::string &data;
 	int length;
 	int index = 0;
 
 	bool hasNext();
 	std::string nextChar();
 	bool nextIs(char);
-	bool isReserved(std::string);
+	bool isReserved(std::string&);
 	bool isBlank(char);
 	bool isDigit(char);
 	bool isLetter(char);

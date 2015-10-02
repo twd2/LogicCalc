@@ -6,10 +6,14 @@
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::string data = "A &%^&%^%^ ^^^%^& B 123CD233(P->Q)&&(R->Q)&&P=>Q654";
+	std::string data = "~~!!~1^2&3&4&5&6&7";
 	Lexer lex(data);
 
-	auto result = lex.Do();
+	auto tokens = lex.Do();
+
+	Parser parser(tokens);
+
+	auto result = parser.bitxor_expr();
 
 	return 0;
 }

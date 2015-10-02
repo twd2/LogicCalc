@@ -33,6 +33,15 @@
     <ClInclude Include="SyntaxError.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Parser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AST.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ASTNode.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -48,6 +57,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="SyntaxError.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Parser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AST.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ASTNode.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -26,7 +26,8 @@ enum TokenType
 	OPGTE, // >=
 	OPLT, // <
 	OPLTE, // <=
-	OPEQU // ==
+	OPEQU, // ==
+	_EOF = 0x7FFFFFFF
 };
 
 class Token
