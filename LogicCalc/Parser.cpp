@@ -47,7 +47,12 @@ ASTNode* Parser::expr()
 
 ASTNode* Parser::tauimp_expr()
 {
-	EXPR1(TOKENTYPE_OPTAUIMP, imp_expr);
+	EXPR1(TOKENTYPE_OPTAUIMP, dualimp_expr);
+}
+
+ASTNode* Parser::dualimp_expr()
+{
+	EXPR1(TOKENTYPE_OPDUALIMP, imp_expr);
 }
 
 ASTNode* Parser::imp_expr()
@@ -159,7 +164,7 @@ void Parser::match(TokenType type)
 	}
 	else
 	{
-		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting " + toString(type));
+		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting " + StringHelper_toString(type));
 	}
 }
 
@@ -191,13 +196,6 @@ std::string Parser::nextToken()
 	{
 		return "'" + std::string(tokens[index + 1].Value) + "'";
 	}
-}
-
-std::string Parser::toString(int a)
-{
-	std::stringstream ss;
-	ss << a;
-	return ss.str();
 }
 
 bool Parser::nextIs(TokenType type)

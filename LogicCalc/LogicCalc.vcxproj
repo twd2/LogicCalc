@@ -82,9 +82,13 @@
   <ItemGroup>
     <ClInclude Include="AST.h" />
     <ClInclude Include="ASTNode.h" />
+    <ClInclude Include="CompareVisitor.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Parser.h" />
+    <ClInclude Include="PrintVisitor.h" />
+    <ClInclude Include="PruningVisitor.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StringHelper.h" />
     <ClInclude Include="SyntaxError.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="Token.h" />
@@ -92,13 +96,17 @@
   <ItemGroup>
     <ClCompile Include="AST.cpp" />
     <ClCompile Include="ASTNode.cpp" />
+    <ClCompile Include="CompareVisitor.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="LogicCalc.cpp" />
     <ClCompile Include="Parser.cpp" />
+    <ClCompile Include="PrintVisitor.cpp" />
+    <ClCompile Include="PruningVisitor.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="StringHelper.cpp" />
     <ClCompile Include="SyntaxError.cpp" />
     <ClCompile Include="Token.cpp" />
   </ItemGroup>

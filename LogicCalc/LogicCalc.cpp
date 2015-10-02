@@ -4,11 +4,13 @@
 #include "stdafx.h"
 
 
-void func()
+void test(std::string data)
 {
-	std::string data = "(P->R)&&(Q->S)&&(P||Q)->R||S";
+	//std::string data = "(P||Q||1)&&!(P||Q||1)<->0"; //"(P->R)&&(Q->S)&&(P||Q)->R||S";
 
-	std::getline(std::cin, data);
+	std::cout << data << ":" << std::endl;
+
+	//std::getline(std::cin, data);
 
 	Lexer lex(data);
 
@@ -19,7 +21,12 @@ void func()
 	try
 	{
 		AST *result = parser.parse();
-		std::cout << result->root->token.Value << std::endl;
+		
+		PruningVisitor::Visit(result);
+		
+		PrintVisitor p;
+		std::cout << p.Visit(result) << std::endl;
+
 		delete result;
 	}
 	catch (SyntaxError err)
@@ -37,7 +44,33 @@ void func()
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	func();
+	/*test("0&&P");
+	test("1&&P");
+	test("P&&P");
+	test("!P&&P");
+	test("P&&!P");
+	test("P&&(P||Q)");
+	test("(P||Q)&&(P||Q)");
+	test("(P||Q)&&P->P");
+
+	test("0||P");
+	test("1||P");
+	test("P||P");
+	test("!P||P");
+	test("P||!P");
+	test("P||(P&&Q)");
+	test("(P&&Q)||P");
+	test("(P&&Q)||P<->P");*/
+
+	test("a^^1");
+	test("(a^^1)&&a");
+	test("1^^a");
+	test("(0^^a)||(1^^a)");
+
+	test("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
+
+	test("~~~x");
+	test("!!!!!!!!!!P");
 
 	std::string s;
 	std::getline(std::cin, s);

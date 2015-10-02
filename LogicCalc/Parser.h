@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <string>
-#include <sstream>
+#include "StringHelper.h"
 #include "SyntaxError.h"
 #include "AST.h"
 #include "ASTNode.h"
@@ -23,6 +23,7 @@ public:
 
 	ASTNode* expr();
 	ASTNode* tauimp_expr();
+	ASTNode* dualimp_expr();
 	ASTNode* imp_expr();
 	ASTNode* or_expr();
 	ASTNode* xor_expr();
@@ -47,6 +48,5 @@ private:
 	std::string nextToken();
 	bool nextIs(TokenType);
 
-	std::string Parser::toString(int);
 };
 
