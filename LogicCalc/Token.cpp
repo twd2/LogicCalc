@@ -3,4 +3,5 @@
 
 Token::~Token()
 {
+	//std::cout << "deleting token" << std::endl;
 }

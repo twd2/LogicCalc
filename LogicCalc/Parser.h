@@ -35,6 +35,9 @@ public:
 	ASTNode* factor();
 
 private:   
+
+	Token EOFToken = Token(TOKENTYPE_EOF, "EOF");
+
 	std::vector<Token> &tokens;
 
 	int length;
@@ -42,7 +45,7 @@ private:
 
 	void match(TokenType);
 
-	Token& getToken();
+	Token &getToken();
 
 	bool hasNext();
 	std::string nextToken();

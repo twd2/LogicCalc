@@ -51,7 +51,7 @@
     <ClInclude Include="CompareVisitor.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PrintVisitor.h">
+    <ClInclude Include="GenerateVisitor.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -89,7 +89,7 @@
     <ClCompile Include="CompareVisitor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PrintVisitor.cpp">
+    <ClCompile Include="GenerateVisitor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -104,10 +104,12 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodeptr)
 	if (leftKnown && rightKnown)
 	{
 		bool value = left->Value == right->Value;
+
 		delete left;
 		*leftptr = left = NULL;
 		delete right;
 		*rightptr = right = NULL;
+
 		node->nodes.clear();
 		SetKnown(node, value);
 		return true;
@@ -118,6 +120,7 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodeptr)
 		*leftptr = left = NULL;
 		delete right;
 		*rightptr = right = NULL;
+
 		node->nodes.clear();
 		SetKnown(node, 1);
 		return true;
@@ -127,7 +130,7 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodeptr)
 		delete left;
 		*leftptr = left = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPNOT, "!"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
 		newNode->nodes.push_back(right);
 
 		bool newKnown = VisitNode(&newNode);
@@ -149,7 +152,7 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodeptr)
 		delete right;
 		*rightptr = right = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPNOT, "!"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
 		newNode->nodes.push_back(left);
 
 		bool newKnown = VisitNode(&newNode);
@@ -185,9 +188,9 @@ bool PruningVisitor::VisitImpNode(ASTNode **nodeptr)
 		*right = *rightptr;
 
 	//P->Q === !P||Q
-	ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPOR, "||"));
+	ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPOR, "||"));
 
-	ASTNode *newSubNode = new ASTNode(*new Token(TOKENTYPE_OPNOT, "!"));
+	ASTNode *newSubNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
 	newSubNode->nodes.push_back(left);
 
 	newNode->nodes.push_back(newSubNode);
@@ -344,7 +347,7 @@ bool PruningVisitor::VisitXorNode(ASTNode **nodeptr)
 		delete left;
 		*leftptr = left = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPNOT, "!"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
 		newNode->nodes.push_back(right);
 
 		bool newKnown = VisitNode(&newNode);
@@ -366,7 +369,7 @@ bool PruningVisitor::VisitXorNode(ASTNode **nodeptr)
 		delete right;
 		*rightptr = right = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPNOT, "!"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
 		newNode->nodes.push_back(left);
 
 		bool newKnown = VisitNode(&newNode);
@@ -572,7 +575,7 @@ bool PruningVisitor::VisitBitxorNode(ASTNode **nodeptr)
 		delete left;
 		*leftptr = left = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPBITNOT, "~"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPBITNOT, "~"));
 		newNode->nodes.push_back(right);
 		
 		bool newKnown = VisitNode(&newNode);
@@ -594,7 +597,7 @@ bool PruningVisitor::VisitBitxorNode(ASTNode **nodeptr)
 		delete right;
 		*rightptr = right = NULL;
 
-		ASTNode *newNode = new ASTNode(*new Token(TOKENTYPE_OPBITNOT, "~"));
+		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPBITNOT, "~"));
 		newNode->nodes.push_back(left);
 
 		bool newKnown = VisitNode(&newNode);

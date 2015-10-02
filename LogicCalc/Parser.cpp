@@ -28,15 +28,15 @@ Parser::~Parser()
 
 AST* Parser::parse()
 {
-	ASTNode* e = expr();
+	ASTNode* rootNode = expr();
 
-	if (e == NULL)
+	if (rootNode == NULL)
 	{
 		throw SyntaxError();
 	}
 
 	AST *ast = new AST();
-	ast->root = e;
+	ast->root = rootNode;
 	return ast;
 }
 
@@ -168,7 +168,7 @@ void Parser::match(TokenType type)
 	}
 }
 
-Token& Parser::getToken()
+Token &Parser::getToken()
 {
 	if (index < length)
 	{
@@ -176,8 +176,7 @@ Token& Parser::getToken()
 	}
 	else
 	{
-		Token *token = new Token(TOKENTYPE_EOF, "EOF");
-		return *token;
+		return EOFToken;
 	}
 }
 

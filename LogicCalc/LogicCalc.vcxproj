@@ -85,7 +85,7 @@
     <ClInclude Include="CompareVisitor.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Parser.h" />
-    <ClInclude Include="PrintVisitor.h" />
+    <ClInclude Include="GenerateVisitor.h" />
     <ClInclude Include="PruningVisitor.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="StringHelper.h" />
@@ -100,7 +100,7 @@
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="LogicCalc.cpp" />
     <ClCompile Include="Parser.cpp" />
-    <ClCompile Include="PrintVisitor.cpp" />
+    <ClCompile Include="GenerateVisitor.cpp" />
     <ClCompile Include="PruningVisitor.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

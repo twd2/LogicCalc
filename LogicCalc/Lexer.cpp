@@ -194,7 +194,7 @@ std::vector<Token> Lexer::Do()
 		}
 		++index;
 	}
-	return tokens;
+	return std::move(tokens);
 }
 
 bool Lexer::hasNext()
