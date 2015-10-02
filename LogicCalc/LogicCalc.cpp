@@ -4,16 +4,43 @@
 #include "stdafx.h"
 
 
-int _tmain(int argc, _TCHAR* argv[])
+void func()
 {
-	std::string data = "~~!!~1^2&3&4&5&6&7";
+	std::string data = "(P->R)&&(Q->S)&&(P||Q)->R||S";
+
+	std::getline(std::cin, data);
+
 	Lexer lex(data);
 
-	auto tokens = lex.Do();
+	auto &tokens = lex.Do();
 
 	Parser parser(tokens);
 
-	auto result = parser.bitxor_expr();
+	try
+	{
+		AST *result = parser.parse();
+		std::cout << result->root->token.Value << std::endl;
+		delete result;
+	}
+	catch (SyntaxError err)
+	{
+		if (err.why.length() > 0)
+		{
+			std::cout << "SyntaxError: " << err.why << std::endl;
+		}
+		else
+		{
+			std::cout << "SyntaxError" << std::endl;
+		}
+	}
+}
+
+int _tmain(int argc, _TCHAR* argv[])
+{
+	func();
+
+	std::string s;
+	std::getline(std::cin, s);
 
 	return 0;
 }

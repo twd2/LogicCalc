@@ -10,5 +10,9 @@ public:
 
 	AST();
 	~AST();
+
+private:
+
+	void deleteNodes();
 };
 

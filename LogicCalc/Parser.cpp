@@ -1,11 +1,32 @@
 #include "stdafx.h"
 #include "Parser.h"
 
+#define EXPR1(Operator, LowerExpr) \
+auto node1 = LowerExpr();\
+while (true)\
+{\
+	Token &token = getToken();\
+\
+	if (token.Type == Operator)\
+	{\
+		Token &savedToken = token;\
+		match(Operator);\
+		auto node2 = LowerExpr();\
+		auto newNode = new ASTNode(savedToken);\
+		newNode->nodes.push_back(node1);\
+		newNode->nodes.push_back(node2);\
+		node1 = newNode;\
+		continue;\
+	}\
+	break; /*eps*/ \
+}\
+return node1;
+
 Parser::~Parser()
 {
 }
 
-AST Parser::parse()
+AST* Parser::parse()
 {
 	ASTNode* e = expr();
 
@@ -14,8 +35,8 @@ AST Parser::parse()
 		throw SyntaxError();
 	}
 
-	AST ast;
-	ast.root = e;
+	AST *ast = new AST();
+	ast->root = e;
 	return ast;
 }
 
@@ -26,136 +47,76 @@ ASTNode* Parser::expr()
 
 ASTNode* Parser::tauimp_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPTAUIMP, imp_expr);
 }
 
 ASTNode* Parser::imp_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPIMP, or_expr);
 }
 
 ASTNode* Parser::or_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPOR, xor_expr);
 }
 
 ASTNode* Parser::xor_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPXOR, and_expr);
 }
 
 ASTNode* Parser::and_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPAND, bitor_expr);
 }
 
 ASTNode* Parser::bitor_expr()
 {
-	throw "not implemented";
+	EXPR1(TOKENTYPE_OPBITOR, bitxor_expr);
 }
 
 ASTNode* Parser::bitxor_expr()
 {
-	if (index >= length)
-	{
-		throw SyntaxError("unexpected EOF");
-	}
-	Token &token = tokens[index];
-
-	auto node1 = bitand_expr();
-	while (true)
-	{
-		if (index >= length) //eps
-		{
-			break;
-		}
-		Token &token = tokens[index];
-
-		if (token.Type == OPBITXOR)
-		{
-			Token &savedToken = token;
-			match(OPBITXOR);
-			auto node2 = bitand_expr();
-			auto newNode = new ASTNode(savedToken);
-			newNode->nodes.push_back(node1);
-			newNode->nodes.push_back(node2);
-			node1 = newNode;
-			continue;
-		}
-		break; //eps
-	}
-	return node1;
+	EXPR1(TOKENTYPE_OPBITXOR, bitand_expr);
 }
 
 ASTNode* Parser::bitand_expr()
 {
-	if (index >= length)
-	{
-	throw SyntaxError("unexpected EOF"); 
-	}
-	Token &token = tokens[index];
-
-	auto node1 = not_expr();
-	while (true)
-	{
-		if (index >= length) //eps
-		{
-			break;
-		}
-		Token &token = tokens[index];
-
-		if (token.Type == OPBITAND)
-		{
-			Token &savedToken = token;
-			match(OPBITAND);
-			auto node2 = not_expr();
-			auto newNode = new ASTNode(savedToken);
-			newNode->nodes.push_back(node1);
-			newNode->nodes.push_back(node2);
-			node1 = newNode;
-			continue;
-		}
-		break; //eps
-	}
-	return node1;
+	EXPR1(TOKENTYPE_OPBITAND, not_expr);
 }
 
 ASTNode* Parser::not_expr()
 {
 	ASTNode* node = NULL;
-	if (index >= length)
-	{
-		throw SyntaxError("unexpected EOF, expecting ID, NUMBER, LBRACKET");
-	}
-	Token &token = tokens[index];
+	Token &token = getToken();
 
 	switch (token.Type)
 	{
-	case OPNOT:
+	case TOKENTYPE_OPNOT:
 	{
 		node = new ASTNode(token);
-		match(OPNOT);
+		match(TOKENTYPE_OPNOT);
 		auto subNode = not_expr();
 		node->nodes.push_back(subNode);
 		return node;
 		break;
 	}
-	case OPBITNOT:
+	case TOKENTYPE_OPBITNOT:
 	{
 		node = new ASTNode(token);
-		match(OPBITNOT);
+		match(TOKENTYPE_OPBITNOT);
 		auto subNode = not_expr();
 		node->nodes.push_back(subNode);
 		return node;
 		break;
 	}
-	case ID:
-	case NUMBER:
-	case LBRACKET:
+	case TOKENTYPE_ID:
+	case TOKENTYPE_NUMBER:
+	case TOKENTYPE_LBRACKET:
 		return factor();
 		break;
 	default:
-		throw SyntaxError("unexpected \"" + std::string(tokens[index].Value) + "\", expecting OPNOT, OPBITNOT, ID, NUMBER, LBRACKET");
+		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting OPNOT, OPBITNOT, ID, NUMBER, LBRACKET");
 		break;
 	}
 }
@@ -163,45 +124,55 @@ ASTNode* Parser::not_expr()
 ASTNode* Parser::factor()
 {
 	ASTNode* node = NULL;
-	if (index >= length)
-	{
-		throw SyntaxError("unexpected EOF, expecting ID, NUMBER, LBRACKET");
-	}
-	Token &token = tokens[index];
+	Token &token = getToken();
 
 	switch (token.Type)
 	{
-	case ID:
+	case TOKENTYPE_ID:
 		node = new ASTNode(token);
-		match(ID);
+		match(TOKENTYPE_ID);
 		return node;
 		break;
-	case NUMBER:
+	case TOKENTYPE_NUMBER:
 		node = new ASTNode(token);
-		match(NUMBER);
+		match(TOKENTYPE_NUMBER);
 		return node;
 		break;
-	case LBRACKET:
-		match(LBRACKET);
+	case TOKENTYPE_LBRACKET:
+		match(TOKENTYPE_LBRACKET);
 		node = expr();
-		match(RBRACKET);
+		match(TOKENTYPE_RBRACKET);
 		return node;
 		break;
 	default:
-		throw SyntaxError("unexpected \"" + std::string(tokens[index].Value) + "\", expecting ID, NUMBER, LBRACKET");
+		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting ID, NUMBER, LBRACKET");
 		break;
 	}
 }
 
 void Parser::match(TokenType type)
 {
-	if (index < length && tokens[index].Type == type)
+	Token &token = getToken();
+	if (token.Type == type)
 	{
 		++index;
 	}
 	else
 	{
-		throw SyntaxError("unexpected " + ((index < length) ? ("\"" + std::string(tokens[index].Value) + "\"") : "EOF") + ", expecting " + toString(type));
+		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting " + toString(type));
+	}
+}
+
+Token& Parser::getToken()
+{
+	if (index < length)
+	{
+		return tokens[index];
+	}
+	else
+	{
+		Token *token = new Token(TOKENTYPE_EOF, "EOF");
+		return *token;
 	}
 }
 

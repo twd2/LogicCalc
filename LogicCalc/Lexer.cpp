@@ -18,22 +18,29 @@ std::vector<Token> Lexer::Do()
 			if (current == '\n') ++lineNumber;
 			//skip
 		}
-		else if (isLetter(current))
+		else if (isIdFirst(current))
 		{
 			std::string word;
 			word += current;
-			while (hasNext() && isLetter(data[index + 1]))
+			while (hasNext() && isId(data[index + 1]))
 			{
 				++index;
 				word += data[index];
 			}
 			if (!isReserved(word))
 			{
-				tokens.push_back(Token(ID, word));
+				tokens.push_back(Token(TOKENTYPE_ID, word));
 			}
 			else
 			{
-				//TODO: reserved word
+				if (word == "wandai")
+				{
+					tokens.push_back(Token(TOKENTYPE_WANDAI, word));
+				}
+				else
+				{
+					//TODO: other reserved words
+				}
 			}
 		}
 		else if (isDigit(current))
@@ -45,30 +52,30 @@ std::vector<Token> Lexer::Do()
 				++index;
 				number += data[index];
 			}
-			tokens.push_back(Token(NUMBER, number));
+			tokens.push_back(Token(TOKENTYPE_NUMBER, number));
 		}
 		else if (current == '(')
 		{
-			tokens.push_back(Token(LBRACKET, "("));
+			tokens.push_back(Token(TOKENTYPE_LBRACKET, "("));
 		}
 		else if (current == ')')
 		{
-			tokens.push_back(Token(RBRACKET, ")"));
+			tokens.push_back(Token(TOKENTYPE_RBRACKET, ")"));
 		}
 		else if (current == '!')
 		{
-			tokens.push_back(Token(OPNOT, "!"));
+			tokens.push_back(Token(TOKENTYPE_OPNOT, "!"));
 		}
 		else if (current == '&')
 		{
 			if (nextIs('&'))
 			{
 				++index;
-				tokens.push_back(Token(OPAND, "&&"));
+				tokens.push_back(Token(TOKENTYPE_OPAND, "&&"));
 			}
 			else
 			{
-				tokens.push_back(Token(OPBITAND, "&"));
+				tokens.push_back(Token(TOKENTYPE_OPBITAND, "&"));
 			}
 		}
 		else if (current == '|')
@@ -76,11 +83,11 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('|'))
 			{
 				++index;
-				tokens.push_back(Token(OPOR, "||"));
+				tokens.push_back(Token(TOKENTYPE_OPOR, "||"));
 			}
 			else
 			{
-				tokens.push_back(Token(OPBITOR, "|"));
+				tokens.push_back(Token(TOKENTYPE_OPBITOR, "|"));
 			}
 		}
 		else if (current == '^')
@@ -88,27 +95,27 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('^'))
 			{
 				++index;
-				tokens.push_back(Token(OPXOR, "^^"));
+				tokens.push_back(Token(TOKENTYPE_OPXOR, "^^"));
 			}
 			else
 			{
-				tokens.push_back(Token(OPBITXOR, "^"));
+				tokens.push_back(Token(TOKENTYPE_OPBITXOR, "^"));
 			}
 		}
 		else if (current == '~')
 		{
-			tokens.push_back(Token(OPBITNOT, "~"));
+			tokens.push_back(Token(TOKENTYPE_OPBITNOT, "~"));
 		}
 		else if (current == '-')
 		{
 			if (nextIs('>'))
 			{
 				++index;
-				tokens.push_back(Token(OPIMP, "->"));
+				tokens.push_back(Token(TOKENTYPE_OPIMP, "->"));
 			}
 			else
 			{
-				tokens.push_back(Token(OPSUB, "-"));
+				tokens.push_back(Token(TOKENTYPE_OPSUB, "-"));
 			}
 		}
 		else if (current == '<')
@@ -116,7 +123,7 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(OPLTE, "<="));
+				tokens.push_back(Token(TOKENTYPE_OPLTE, "<="));
 			}
 			else if (nextIs('-'))
 			{
@@ -124,7 +131,7 @@ std::vector<Token> Lexer::Do()
 				if (nextIs('>'))
 				{
 					++index;
-					tokens.push_back(Token(OPDUALIMP, "<->"));
+					tokens.push_back(Token(TOKENTYPE_OPDUALIMP, "<->"));
 				}
 				else
 				{
@@ -133,7 +140,7 @@ std::vector<Token> Lexer::Do()
 			}
 			else
 			{
-				tokens.push_back(Token(OPLT, "<"));
+				tokens.push_back(Token(TOKENTYPE_OPLT, "<"));
 			}
 		}
 		else if (current == '=')
@@ -141,12 +148,12 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('>'))
 			{
 				++index;
-				tokens.push_back(Token(OPTAUIMP, "=>"));
+				tokens.push_back(Token(TOKENTYPE_OPTAUIMP, "=>"));
 			}
 			else if(nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(OPEQU, "=="));
+				tokens.push_back(Token(TOKENTYPE_OPEQU, "=="));
 			}
 			else
 			{
@@ -158,28 +165,28 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(OPGTE, ">="));
+				tokens.push_back(Token(TOKENTYPE_OPGTE, ">="));
 			}
 			else
 			{
-				tokens.push_back(Token(OPGT, ">"));
+				tokens.push_back(Token(TOKENTYPE_OPGT, ">"));
 			}
 		}
 		else if (current == '+')
 		{
-			tokens.push_back(Token(OPADD, "+"));
+			tokens.push_back(Token(TOKENTYPE_OPADD, "+"));
 		}
 		else if (current == '*')
 		{
-			tokens.push_back(Token(OPMUL, "*"));
+			tokens.push_back(Token(TOKENTYPE_OPMUL, "*"));
 		}
 		else if (current == '/')
 		{
-			tokens.push_back(Token(OPDIV, "/"));
+			tokens.push_back(Token(TOKENTYPE_OPDIV, "/"));
 		}
 		else if (current == '%')
 		{
-			tokens.push_back(Token(OPMOD, "%"));
+			tokens.push_back(Token(TOKENTYPE_OPMOD, "%"));
 		}
 		else
 		{
@@ -214,7 +221,8 @@ bool Lexer::nextIs(char what)
 
 bool Lexer::isReserved(std::string &str)
 {
-	return false;
+	auto iter = std::find(reservedWords.begin(), reservedWords.end(), str);
+	return iter != reservedWords.end();
 }
 
 bool Lexer::isBlank(char a)
@@ -226,6 +234,17 @@ bool Lexer::isDigit(char a)
 {
 	return a >= '0' && a <= '9';
 }
+
+bool Lexer::isIdFirst(char a)
+{
+	return a == '_' || a == '$' || isLetter(a);
+}
+
+bool Lexer::isId(char a)
+{
+	return isIdFirst(a) || isDigit(a);
+}
+
 
 bool Lexer::isLetter(char a)
 {

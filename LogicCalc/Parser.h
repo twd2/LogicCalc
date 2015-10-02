@@ -19,7 +19,7 @@ public:
 
 	~Parser();
 
-	AST parse();
+	AST* parse();
 
 	ASTNode* expr();
 	ASTNode* tauimp_expr();
@@ -40,6 +40,8 @@ private:
 	int index = 0;
 
 	void match(TokenType);
+
+	Token& getToken();
 
 	bool hasNext();
 	std::string nextToken();
