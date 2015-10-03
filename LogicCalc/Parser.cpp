@@ -10,16 +10,19 @@
 		TokenType type = token.Type;\
 		if (TokenMatcher)\
 		{\
-			Token &savedToken = token;\
 			match(token.Type);\
 			ASTNode *node2 = LowerExpr();\
-			ASTNode *newNode = new ASTNode(savedToken);\
+			ASTNode *newNode = new ASTNode(token);\
 			newNode->Nodes.push_back(node1);\
 			newNode->Nodes.push_back(node2);\
 			node1 = newNode;\
 			continue;\
 		}\
-		break; /*eps*/ \
+		else\
+		{\
+			/*eps*/\
+		}\
+		break; \
 	}\
 	return node1;
 
