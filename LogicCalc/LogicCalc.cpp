@@ -3,14 +3,16 @@
 
 #include "stdafx.h"
 
-std::vector<Token> compile(std::string data)
+std::pair<std::vector<Token>, std::vector<std::string> > compile(std::string data)
 {
-	Lexer lex(data);
+	std::vector<std::string> symbols;
 
-	std::vector<Token> &tokens = lex.Do();
+	Lexer lexer(data);
+	std::vector<Token> &tokens = lexer.Do();
+
+	symbols = lexer.Symbols;
 
 	Parser parser(tokens);
-
 	AST *result = parser.Parse();
 
 	PruningVisitor::Visit(result); //delete rubbish!
@@ -18,9 +20,11 @@ std::vector<Token> compile(std::string data)
 	GenerateVisitor generator;
 	std::vector<Token> &code = generator.Visit(result); //generate!
 
+	//symbols = generator.Symbols;
+
 	delete result;
 
-	return std::move(code);
+	return std::make_pair(code, symbols);
 }
 
 void print(std::vector<Token> &code)
@@ -146,76 +150,156 @@ int calc(std::vector<Token> &code, std::map<std::string, int> &values)
 	return left;
 }
 
+std::vector<std::vector<int> > exprToTable(std::vector<Token> &code, std::vector<std::string> &symbols)
+{
+	int symbolCount = symbols.size();
+
+	std::map<std::string, int> values;
+
+	int count = 1 << symbolCount;
+
+	/*for (int id = 0; id < symbolCount; ++id)
+	{
+		std::cout << symbols[id] << " ";
+	}
+	std::cout << "expr" << std::endl;*/
+
+	std::vector<std::vector<int> > table;
+	table.reserve(count);
+
+	for (int i = 0; i < count; ++i)
+	{
+		std::vector<int> row;
+		row.reserve(symbolCount + 1);
+		//枚举可能的取值
+		for (int id = 0; id < symbolCount; ++id)
+		{
+			row.push_back(values[symbols[id]] = (i >> (symbolCount - id - 1)) & 1);
+		}
+
+		row.push_back(calc(code, values));
+		table.push_back(row);
+		//std::cout << "   " << ans << std::endl;
+	}
+	return std::move(table);
+}
+
+void printTable(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+{
+	int symbolCount = symbols.size();
+
+	for (int i = 0; i < symbolCount; ++i)
+	{
+		std::cout << symbols[i] << " ";
+	}
+	std::cout << "expr" << std::endl;
+
+	for each (auto &row in table)
+	{
+		for (int i = 0; i < symbolCount; ++i)
+		{
+			std::cout << row[i] << " ";
+		}
+		std::cout << "   " << row[symbolCount] << std::endl;
+	}
+}
+
+std::string toDNF(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+{
+	std::string result = "   ";
+
+	int symbolCount = symbols.size();
+	int count = table.size();
+
+	for (int r = 0; r < count; ++r)
+	{
+		auto &row = table[r];
+
+		if (row[symbolCount])
+		{
+			result += "(";
+			for (int i = 0; i < symbolCount; ++i)
+			{
+				result += (row[i] ? "" : "!") + symbols[i];
+				if (i < symbolCount - 1)
+				{
+					result += " && ";
+				}
+			}
+			result += ")\n|| ";
+		}
+	}
+	if (result == "   ")
+	{
+		result = "(empty)";
+	}
+	else
+	{
+		result = result.substr(0, result.length() - 4);
+	}
+	return std::move(result);
+}
+
+std::string toCNF(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+{
+	std::string result = "   ";
+
+	int symbolCount = symbols.size();
+	int count = table.size();
+
+	for (int r = 0; r < count; ++r)
+	{
+		auto &row = table[r];
+
+		if (!row[symbolCount])
+		{
+			result += "(";
+			for (int i = 0; i < symbolCount; ++i)
+			{
+				result += (!row[i] ? "" : "!") + symbols[i];
+				if (i < symbolCount - 1)
+				{
+					result += " || ";
+				}
+			}
+			result += ")\n&& ";
+		}
+	}
+	if (result == "   ")
+	{
+		result = "(empty)";
+	}
+	else
+	{
+		result = result.substr(0, result.length() - 4);
+	}
+	return std::move(result);
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::string data;
+	std::string expr = "P||R&&Q||S->T";
 	do
 	{
-		std::getline(std::cin, data);
+		std::getline(std::cin, expr);
 		try
 		{
-			std::vector<Token> code;
-			//code = compile("(P||Q)&&(P||Q)");
-			code = compile(data);
-			std::map<std::string, int> values;
-			/*code = compile("0&&P");
+			std::pair<std::vector<Token>, std::vector<std::string> > codeSymbolsPair = compile(expr);
+			std::vector<Token> &code = codeSymbolsPair.first;
+			std::vector<std::string> &symbols = codeSymbolsPair.second;
+
 			print(code);
-			code = compile("1&&P");
-			print(code);
-			code = compile("P&&P");
-			print(code);
-			code = compile("!P&&P");
-			print(code);
-			code = compile("P&&!P");
-			print(code);
-			code = compile("P&&(P||Q)");
-			print(code);
-			code = compile("(P||Q)&&(P||Q)");
-			print(code);
-			code = compile("(P||Q)&&P->P");
-			print(code);
-			code = compile("0||P");
-			print(code);
-			code = compile("1||P");
-			print(code);
-			code = compile("P||P");
-			print(code);
-			code = compile("!P||P");
-			print(code);
-			code = compile("P||!P");
-			print(code);
-			code = compile("P||(P&&Q)");
-			print(code);
-			code = compile("(P&&Q)||P");
-			print(code);
-			code = compile("(P&&Q)||P<->P");
-			print(code);
-			code = compile("a^^1");
-			print(code);
-			code = compile("(a^^1)&&a");
-			print(code);
-			code = compile("1^^a");
-			print(code);
-			code = compile("(0^^a)||(1^^a)");
-			print(code);
-			code = compile("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
-			print(code);
-			code = compile("~~~x");
-			print(code);
-			code = compile("!!!!!!!!!!P");
-			print(code);
-			code = compile("(P||Q||1)&&!(P||Q||1)<->0");
-			print(code);*/
-			//for (int i = 0; i < 16; ++i)
-			{
-				print(code);
-				/*values["x1"] = (i >> 3) & 1;
-				values["x2"] = (i >> 2) & 1;
-				values["x3"] = (i >> 1) & 1;
-				values["S"] = (i >> 0) & 1;*/
-				//int ans = calc(code, values);
-				//std::cout << ans << std::endl;
-			}
+			std::cout << std::endl;
+
+			auto table = exprToTable(code, symbols);
+			printTable(symbols, table);
+			std::cout << std::endl;
+
+			std::string DNF = toDNF(symbols, table);
+			std::cout << "DNF:" << std::endl << DNF << std::endl << std::endl;
+
+			std::string CNF = toCNF(symbols, table);
+			std::cout << "CNF:" << std::endl << CNF << std::endl << std::endl;
 		}
 		catch (SyntaxError err)
 		{
@@ -236,3 +320,51 @@ int _tmain(int argc, _TCHAR* argv[])
 	return 0;
 }
 
+/*code = compile("0&&P");
+print(code);
+code = compile("1&&P");
+print(code);
+code = compile("P&&P");
+print(code);
+code = compile("!P&&P");
+print(code);
+code = compile("P&&!P");
+print(code);
+code = compile("P&&(P||Q)");
+print(code);
+code = compile("(P||Q)&&(P||Q)");
+print(code);
+code = compile("(P||Q)&&P->P");
+print(code);
+code = compile("0||P");
+print(code);
+code = compile("1||P");
+print(code);
+code = compile("P||P");
+print(code);
+code = compile("!P||P");
+print(code);
+code = compile("P||!P");
+print(code);
+code = compile("P||(P&&Q)");
+print(code);
+code = compile("(P&&Q)||P");
+print(code);
+code = compile("(P&&Q)||P<->P");
+print(code);
+code = compile("a^^1");
+print(code);
+code = compile("(a^^1)&&a");
+print(code);
+code = compile("1^^a");
+print(code);
+code = compile("(0^^a)||(1^^a)");
+print(code);
+code = compile("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
+print(code);
+code = compile("~~~x");
+print(code);
+code = compile("!!!!!!!!!!P");
+print(code);
+code = compile("(P||Q||1)&&!(P||Q||1)<->0");
+print(code);*/

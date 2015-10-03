@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <map>
@@ -17,7 +18,7 @@ public:
 
 	~Lexer();
 	std::vector<Token> Do();
-	std::map<std::string, int> Symbols;
+	std::vector<std::string> Symbols;
 
 private:
 	std::string &data;
