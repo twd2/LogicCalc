@@ -1,0 +1,66 @@
+! ~ & ^ | && ^^ || -> <->
+
+expr : tauimp_expr
+
+tauimp_expr : dualimp_expr tauimp_rest
+
+tauimp_rest : OPTAUIMP dualimp_expr tauimp_rest
+            | eps
+
+dualimp_expr : imp_expr dualimp_rest
+
+dualimp_rest : OPDUALIMP imp_expr dualimp_rest
+             | eps
+
+imp_expr : or_expr imp_rest
+         
+imp_rest : OPIMP or_expr imp_rest
+         | eps
+
+or_expr : xor_expr or_rest
+        
+or_rest : OPOR xor_expr or_rest
+        | eps
+
+xor_expr : and_expr xor_rest
+
+xor_rest : OPXOR and_expr xor_rest
+         | eps
+
+and_expr : bitor_expr and_rest
+         
+and_rest : OPAND bitor_expr and_rest
+         | eps
+
+bitor_expr : bitxor_expr bitor_rest
+
+bitor_rest : OPBITOR bitxor_expr bitor_rest
+           | eps
+
+bitxor_expr : bitand_expr bitxor_rest
+
+bitxor_rest : OPBITXOR bitand_expr bitxor_rest
+            | eps
+
+bitand_expr : addsub_expr bitand_rest
+
+bitand_rest : OPBITAND addsub_expr bitand_rest
+            | eps
+
+addsub_expr : muldivmod_rest addsub_rest
+
+addsub_rest : (OPADD|OPSUB) muldivmod_rest addsub_rest
+            | eps
+
+muldivmod_expr : not_expr muldivmod_rest
+            
+muldivmod_rest : (OPMUL|OPDIV|OPMOD) not_expr muldivmod_rest
+               | eps
+
+not_expr : OPNOT not_expr
+         | OPBITNOT not_expr
+         | factor
+
+factor : ID
+       | NUMBER
+       | LBRACKET expr RBRACKET
