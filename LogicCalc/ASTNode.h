@@ -10,9 +10,6 @@ public:
 
 	std::vector<ASTNode*> nodes;
 
-	/*ASTNode(Token &token) : token(token)
-	{}*/
-
 	ASTNode(Token token) : token(token)
 	{}
 

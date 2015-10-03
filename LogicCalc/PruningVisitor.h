@@ -23,6 +23,11 @@ private:
 	static bool VisitBitorNode(ASTNode**);
 	static bool VisitBitxorNode(ASTNode**);
 	static bool VisitBitandNode(ASTNode**);
+	static bool VisitAddNode(ASTNode**);
+	static bool VisitSubNode(ASTNode**);
+	static bool VisitMulNode(ASTNode**);
+	static bool VisitDivNode(ASTNode**);
+	static bool VisitModNode(ASTNode**);
 	static bool VisitNotNode(ASTNode**);
 	static bool VisitIDNode(ASTNode**);
 	static bool VisitNumberNode(ASTNode**);

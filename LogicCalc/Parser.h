@@ -19,7 +19,7 @@ public:
 
 	~Parser();
 
-	AST* parse();
+	AST* Parse();
 
 	ASTNode* expr();
 	ASTNode* tauimp_expr();
@@ -31,7 +31,9 @@ public:
 	ASTNode* bitor_expr();
 	ASTNode* bitxor_expr();
 	ASTNode* bitand_expr();
-	ASTNode* not_expr();
+	ASTNode* addsub_expr();
+	ASTNode* muldivmod_expr();
+	ASTNode* unary_expr();
 	ASTNode* factor();
 
 private:   
@@ -48,6 +50,7 @@ private:
 	Token &getToken();
 
 	bool hasNext();
+	std::string tokenString();
 	std::string nextToken();
 	bool nextIs(TokenType);
 

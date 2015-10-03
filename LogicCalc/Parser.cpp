@@ -1,43 +1,44 @@
 #include "stdafx.h"
 #include "Parser.h"
 
-#define EXPR1(Operator, LowerExpr) \
-auto node1 = LowerExpr();\
-while (true)\
-{\
-	Token &token = getToken();\
-\
-	if (token.Type == Operator)\
+#define LEFT_ASSO_OP(TokenMatcher, LowerExpr) \
+	ASTNode *node1 = LowerExpr();\
+	while (true)\
 	{\
-		Token &savedToken = token;\
-		match(Operator);\
-		auto node2 = LowerExpr();\
-		auto newNode = new ASTNode(savedToken);\
-		newNode->nodes.push_back(node1);\
-		newNode->nodes.push_back(node2);\
-		node1 = newNode;\
-		continue;\
+		Token &token = getToken();\
+	\
+		TokenType type = token.Type;\
+		if (TokenMatcher)\
+		{\
+			Token &savedToken = token;\
+			match(token.Type);\
+			ASTNode *node2 = LowerExpr();\
+			ASTNode *newNode = new ASTNode(savedToken);\
+			newNode->nodes.push_back(node1);\
+			newNode->nodes.push_back(node2);\
+			node1 = newNode;\
+			continue;\
+		}\
+		break; /*eps*/ \
 	}\
-	break; /*eps*/ \
-}\
-return node1;
+	return node1;
 
 Parser::~Parser()
 {
 }
 
-AST* Parser::parse()
+AST* Parser::Parse()
 {
-	ASTNode* rootNode = expr();
+	ASTNode *rootNode = expr();
 
 	if (rootNode == NULL)
 	{
 		throw SyntaxError();
 	}
 
-	AST *ast = new AST();
-	ast->root = rootNode;
-	return ast;
+	AST *tree = new AST();
+	tree->root = rootNode;
+	return tree;
 }
 
 ASTNode* Parser::expr()
@@ -47,50 +48,60 @@ ASTNode* Parser::expr()
 
 ASTNode* Parser::tauimp_expr()
 {
-	EXPR1(TOKENTYPE_OPTAUIMP, dualimp_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPTAUIMP, dualimp_expr);
 }
 
 ASTNode* Parser::dualimp_expr()
 {
-	EXPR1(TOKENTYPE_OPDUALIMP, imp_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPDUALIMP, imp_expr);
 }
 
 ASTNode* Parser::imp_expr()
 {
-	EXPR1(TOKENTYPE_OPIMP, or_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPIMP, or_expr);
 }
 
 ASTNode* Parser::or_expr()
 {
-	EXPR1(TOKENTYPE_OPOR, xor_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPOR, xor_expr);
 }
 
 ASTNode* Parser::xor_expr()
 {
-	EXPR1(TOKENTYPE_OPXOR, and_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPXOR, and_expr);
 }
 
 ASTNode* Parser::and_expr()
 {
-	EXPR1(TOKENTYPE_OPAND, bitor_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPAND, bitor_expr);
 }
 
 ASTNode* Parser::bitor_expr()
 {
-	EXPR1(TOKENTYPE_OPBITOR, bitxor_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPBITOR, bitxor_expr);
 }
 
 ASTNode* Parser::bitxor_expr()
 {
-	EXPR1(TOKENTYPE_OPBITXOR, bitand_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPBITXOR, bitand_expr);
 }
 
 ASTNode* Parser::bitand_expr()
 {
-	EXPR1(TOKENTYPE_OPBITAND, not_expr);
+	LEFT_ASSO_OP(type == TOKENTYPE_OPBITAND, addsub_expr);
 }
 
-ASTNode* Parser::not_expr()
+ASTNode* Parser::addsub_expr()
+{
+	LEFT_ASSO_OP(type == TOKENTYPE_OPADD || type == TOKENTYPE_OPSUB, muldivmod_expr);
+}
+
+ASTNode* Parser::muldivmod_expr()
+{
+	LEFT_ASSO_OP(type == TOKENTYPE_OPMUL || type == TOKENTYPE_OPDIV || type == TOKENTYPE_OPMOD, unary_expr);
+}
+
+ASTNode* Parser::unary_expr()
 {
 	ASTNode* node = NULL;
 	Token &token = getToken();
@@ -98,19 +109,11 @@ ASTNode* Parser::not_expr()
 	switch (token.Type)
 	{
 	case TOKENTYPE_OPNOT:
-	{
-		node = new ASTNode(token);
-		match(TOKENTYPE_OPNOT);
-		auto subNode = not_expr();
-		node->nodes.push_back(subNode);
-		return node;
-		break;
-	}
 	case TOKENTYPE_OPBITNOT:
 	{
 		node = new ASTNode(token);
-		match(TOKENTYPE_OPBITNOT);
-		auto subNode = not_expr();
+		match(token.Type);
+		ASTNode *subNode = unary_expr();
 		node->nodes.push_back(subNode);
 		return node;
 		break;
@@ -121,7 +124,7 @@ ASTNode* Parser::not_expr()
 		return factor();
 		break;
 	default:
-		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting OPNOT, OPBITNOT, ID, NUMBER, LBRACKET");
+		throw SyntaxError("Parser: Unexpected " + tokenString() + ", expecting OPNOT, OPBITNOT, ID, NUMBER, LBRACKET");
 		break;
 	}
 }
@@ -150,7 +153,7 @@ ASTNode* Parser::factor()
 		return node;
 		break;
 	default:
-		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting ID, NUMBER, LBRACKET");
+		throw SyntaxError("Parser: Unexpected " + tokenString() + ", expecting ID, NUMBER, LBRACKET");
 		break;
 	}
 }
@@ -164,7 +167,7 @@ void Parser::match(TokenType type)
 	}
 	else
 	{
-		throw SyntaxError("unexpected \"" + std::string(token.Value) + "\", expecting " + StringHelper_toString(type));
+		throw SyntaxError("Parser: Unexpected " + tokenString() + ", expecting " + Token_toName(type));
 	}
 }
 
@@ -183,6 +186,19 @@ Token &Parser::getToken()
 bool Parser::hasNext()
 {
 	return index < length - 1;
+}
+
+std::string Parser::tokenString()
+{
+	Token &token = getToken();
+	if (token.Type == TOKENTYPE_EOF)
+	{
+		return "EOF";
+	}
+	else
+	{
+		return "\"" + token.Value + "\"";
+	}
 }
 
 std::string Parser::nextToken()

@@ -6,7 +6,7 @@ class AST
 {
 public:
 
-	ASTNode* root;
+	ASTNode *root;
 
 	AST();
 	~AST();

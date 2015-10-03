@@ -42,3 +42,5 @@ public:
 
 	~Token();
 };
+
+std::string Token_toName(TokenType);

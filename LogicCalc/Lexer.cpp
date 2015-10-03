@@ -135,7 +135,7 @@ std::vector<Token> Lexer::Do()
 				}
 				else
 				{
-					throw SyntaxError("unexpected " + nextChar() + ", expecting '>'");
+					throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting '>'");
 				}
 			}
 			else
@@ -157,7 +157,7 @@ std::vector<Token> Lexer::Do()
 			}
 			else
 			{
-				throw SyntaxError("unexpected " + nextChar() + ", expecting '>', '='");
+				throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting '>', '='");
 			}
 		}
 		else if (current == '>')
@@ -190,7 +190,7 @@ std::vector<Token> Lexer::Do()
 		}
 		else
 		{
-			throw SyntaxError();
+			throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting A-Z, a-z, 0-9, '$', '_', '(', ')', '!', '&', '|', '^', '~', '-', '<', '>', '=', '+', '*', '/', '%'");
 		}
 		++index;
 	}

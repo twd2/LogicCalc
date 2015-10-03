@@ -30,6 +30,7 @@ bool PruningVisitor::VisitNode(ASTNode **node)
 		return VisitNumberNode(node);
 		break;
 	case TOKENTYPE_OPADD:
+		return VisitAddNode(node);
 		break;
 	case TOKENTYPE_OPAND:
 		return VisitAndNode(node);
@@ -47,6 +48,7 @@ bool PruningVisitor::VisitNode(ASTNode **node)
 		return VisitBitxorNode(node);
 		break;
 	case TOKENTYPE_OPDIV:
+		return VisitDivNode(node);
 		break;
 	case TOKENTYPE_OPDUALIMP:
 		return VisitDualimpNode(node);
@@ -65,8 +67,10 @@ bool PruningVisitor::VisitNode(ASTNode **node)
 	case TOKENTYPE_OPLTE:
 		break;
 	case TOKENTYPE_OPMOD:
+		return VisitModNode(node);
 		break;
 	case TOKENTYPE_OPMUL:
+		return VisitMulNode(node);
 		break;
 	case TOKENTYPE_OPNOT:
 		return VisitNotNode(node);
@@ -75,6 +79,7 @@ bool PruningVisitor::VisitNode(ASTNode **node)
 		return VisitOrNode(node);
 		break;
 	case TOKENTYPE_OPSUB:
+		return VisitSubNode(node);
 		break;
 	case TOKENTYPE_OPTAUIMP:
 		break;
@@ -656,6 +661,151 @@ bool PruningVisitor::VisitBitandNode(ASTNode **nodeptr)
 
 		CopyTo(left, nodeptr);
 		return leftKnown;
+	}
+	return false;
+}
+
+bool PruningVisitor::VisitAddNode(ASTNode**nodeptr)
+{
+	ASTNode *node = *nodeptr;
+
+	ASTNode **leftptr, **rightptr;
+	leftptr = &(node->nodes[0]);
+	rightptr = &(node->nodes[1]);
+	bool leftKnown = VisitNode(leftptr),
+		rightKnown = VisitNode(rightptr);
+
+	ASTNode *left = *leftptr,
+		*right = *rightptr;
+
+	if (leftKnown && rightKnown)
+	{
+		int value = left->Value + right->Value;
+
+		delete left;
+		*leftptr = left = NULL;
+		delete right;
+		*rightptr = right = NULL;
+
+		node->nodes.clear();
+		SetKnown(node, value);
+		return true;
+	}
+	return false;
+}
+
+bool PruningVisitor::VisitSubNode(ASTNode**nodeptr)
+{
+	ASTNode *node = *nodeptr;
+
+	ASTNode **leftptr, **rightptr;
+	leftptr = &(node->nodes[0]);
+	rightptr = &(node->nodes[1]);
+	bool leftKnown = VisitNode(leftptr),
+		rightKnown = VisitNode(rightptr);
+
+	ASTNode *left = *leftptr,
+		*right = *rightptr;
+
+	if (leftKnown && rightKnown)
+	{
+		int value = left->Value - right->Value;
+
+		delete left;
+		*leftptr = left = NULL;
+		delete right;
+		*rightptr = right = NULL;
+
+		node->nodes.clear();
+		SetKnown(node, value);
+		return true;
+	}
+	return false;
+}
+
+bool PruningVisitor::VisitMulNode(ASTNode**nodeptr)
+{
+	ASTNode *node = *nodeptr;
+
+	ASTNode **leftptr, **rightptr;
+	leftptr = &(node->nodes[0]);
+	rightptr = &(node->nodes[1]);
+	bool leftKnown = VisitNode(leftptr),
+		rightKnown = VisitNode(rightptr);
+
+	ASTNode *left = *leftptr,
+		*right = *rightptr;
+
+	if (leftKnown && rightKnown)
+	{
+		int value = left->Value * right->Value;
+
+		delete left;
+		*leftptr = left = NULL;
+		delete right;
+		*rightptr = right = NULL;
+
+		node->nodes.clear();
+		SetKnown(node, value);
+		return true;
+	}
+	return false;
+}
+
+bool PruningVisitor::VisitDivNode(ASTNode**nodeptr)
+{
+	ASTNode *node = *nodeptr;
+
+	ASTNode **leftptr, **rightptr;
+	leftptr = &(node->nodes[0]);
+	rightptr = &(node->nodes[1]);
+	bool leftKnown = VisitNode(leftptr),
+		rightKnown = VisitNode(rightptr);
+
+	ASTNode *left = *leftptr,
+		*right = *rightptr;
+
+	if (leftKnown && rightKnown)
+	{
+		int value = left->Value / right->Value;
+
+		delete left;
+		*leftptr = left = NULL;
+		delete right;
+		*rightptr = right = NULL;
+
+		node->nodes.clear();
+		SetKnown(node, value);
+		return true;
+	}
+	return false;
+}
+
+bool PruningVisitor::VisitModNode(ASTNode**nodeptr)
+{
+	ASTNode *node = *nodeptr;
+
+	ASTNode **leftptr, **rightptr;
+	leftptr = &(node->nodes[0]);
+	rightptr = &(node->nodes[1]);
+	bool leftKnown = VisitNode(leftptr),
+		rightKnown = VisitNode(rightptr);
+
+	ASTNode *left = *leftptr,
+		*right = *rightptr;
+
+	if (leftKnown && rightKnown)
+	{
+		int value = left->Value % right->Value;
+
+		delete left;
+		*leftptr = left = NULL;
+		delete right;
+		*rightptr = right = NULL;
+
+		node->nodes.clear();
+		SetKnown(node, value);
+		return true;
 	}
 	return false;
 }

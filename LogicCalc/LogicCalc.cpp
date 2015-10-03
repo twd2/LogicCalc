@@ -3,21 +3,20 @@
 
 #include "stdafx.h"
 
-
 std::vector<Token> compile(std::string data)
 {
 	Lexer lex(data);
 
-	auto &tokens = lex.Do();
+	std::vector<Token> &tokens = lex.Do();
 
 	Parser parser(tokens);
 
-	AST *result = parser.parse();
+	AST *result = parser.Parse();
 
 	PruningVisitor::Visit(result); //delete rubbish!
 
 	GenerateVisitor generator;
-	auto &code = generator.Visit(result); //generate!
+	std::vector<Token> &code = generator.Visit(result); //generate!
 
 	delete result;
 
@@ -26,7 +25,8 @@ std::vector<Token> compile(std::string data)
 
 void print(std::vector<Token> &code)
 {
-	for each (auto token in code)
+	std::cout << "RPN: ";
+	for each (const Token &token in code)
 	{
 		std::cout << token.Value << " ";
 	}
@@ -39,7 +39,7 @@ int calc(std::vector<Token> &code, std::map<std::string, int> &values)
 
 	int left, right;
 
-	for each (auto token in code)
+	for each (const Token &token in code)
 	{
 		switch (token.Type)
 		{
@@ -148,84 +148,90 @@ int calc(std::vector<Token> &code, std::map<std::string, int> &values)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	try
+	std::string data;
+	do
 	{
-		std::vector<Token> code;
-		/*code = compile("0&&P");
-		print(code);
-		code = compile("1&&P");
-		print(code);
-		code = compile("P&&P");
-		print(code);
-		code = compile("!P&&P");
-		print(code);
-		code = compile("P&&!P");
-		print(code);
-		code = compile("P&&(P||Q)");
-		print(code);
-		code = compile("(P||Q)&&(P||Q)");
-		print(code);
-		code = compile("(P||Q)&&P->P");
-		print(code);
-		code = compile("0||P");
-		print(code);
-		code = compile("1||P");
-		print(code);
-		code = compile("P||P");
-		print(code);
-		code = compile("!P||P");
-		print(code);
-		code = compile("P||!P");
-		print(code);
-		code = compile("P||(P&&Q)");
-		print(code);
-		code = compile("(P&&Q)||P");
-		print(code);
-		code = compile("(P&&Q)||P<->P");
-		print(code);
-		code = compile("a^^1");
-		print(code);
-		code = compile("(a^^1)&&a");
-		print(code);
-		code = compile("1^^a");
-		print(code);
-		code = compile("(0^^a)||(1^^a)");
-		print(code);
-		code = compile("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
-		print(code);
-		code = compile("~~~x");
-		print(code);
-		code = compile("!!!!!!!!!!P");
-		print(code);
-		code = compile("(P||Q||1)&&!(P||Q||1)<->0");
-		print(code);*/
-		for (int i = 0; i < 10000; ++i)
+		std::getline(std::cin, data);
+		try
 		{
-			code = compile("(P->R)&&(Q->S)&&(P||Q)->R||S");
-			//print(code);
-			/*std::map<std::string, int> values;
-			values["P"] = 0;
-			values["Q"] = 0;
-			values["R"] = 0;
-			values["S"] = 0;
-			int ans = calc(code, values);*/
-			//std::cout << ans << std::endl;
+			std::vector<Token> code;
+			//code = compile("(P||Q)&&(P||Q)");
+			code = compile(data);
+			std::map<std::string, int> values;
+			/*code = compile("0&&P");
+			print(code);
+			code = compile("1&&P");
+			print(code);
+			code = compile("P&&P");
+			print(code);
+			code = compile("!P&&P");
+			print(code);
+			code = compile("P&&!P");
+			print(code);
+			code = compile("P&&(P||Q)");
+			print(code);
+			code = compile("(P||Q)&&(P||Q)");
+			print(code);
+			code = compile("(P||Q)&&P->P");
+			print(code);
+			code = compile("0||P");
+			print(code);
+			code = compile("1||P");
+			print(code);
+			code = compile("P||P");
+			print(code);
+			code = compile("!P||P");
+			print(code);
+			code = compile("P||!P");
+			print(code);
+			code = compile("P||(P&&Q)");
+			print(code);
+			code = compile("(P&&Q)||P");
+			print(code);
+			code = compile("(P&&Q)||P<->P");
+			print(code);
+			code = compile("a^^1");
+			print(code);
+			code = compile("(a^^1)&&a");
+			print(code);
+			code = compile("1^^a");
+			print(code);
+			code = compile("(0^^a)||(1^^a)");
+			print(code);
+			code = compile("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
+			print(code);
+			code = compile("~~~x");
+			print(code);
+			code = compile("!!!!!!!!!!P");
+			print(code);
+			code = compile("(P||Q||1)&&!(P||Q||1)<->0");
+			print(code);*/
+			//for (int i = 0; i < 16; ++i)
+			{
+				print(code);
+				/*values["x1"] = (i >> 3) & 1;
+				values["x2"] = (i >> 2) & 1;
+				values["x3"] = (i >> 1) & 1;
+				values["S"] = (i >> 0) & 1;*/
+				//int ans = calc(code, values);
+				//std::cout << ans << std::endl;
+			}
 		}
-	}
-	catch (SyntaxError err)
-	{
-		if (err.why.length() > 0)
+		catch (SyntaxError err)
 		{
-			std::cout << "SyntaxError: " << err.why << std::endl;
+			if (err.why.length() > 0)
+			{
+				std::cout << "SyntaxError: " << err.why << std::endl;
+			}
+			else
+			{
+				std::cout << "SyntaxError" << std::endl;
+			}
 		}
-		else
-		{
-			std::cout << "SyntaxError" << std::endl;
-		}
-	}
+	} while (true);// (data != "");
 
 	std::string s;
-	//std::getline(std::cin, s);
+	std::getline(std::cin, s);
 
 	return 0;
 }
