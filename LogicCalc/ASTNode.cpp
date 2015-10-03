@@ -4,13 +4,13 @@
 ASTNode::~ASTNode()
 {
 	//std::cout << "deleting node" << std::endl;
-	int size = nodes.size();
+	int size = Nodes.size();
 	for (int i = 0; i < size; ++i)
 	{
-		if (nodes[i] != NULL)
+		if (Nodes[i] != NULL)
 		{
-			delete nodes[i];
-			nodes[i] = NULL;
+			delete Nodes[i];
+			Nodes[i] = NULL;
 		}
 	}
 }

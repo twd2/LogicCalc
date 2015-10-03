@@ -21,10 +21,10 @@ std::vector<Token> GenerateVisitor::Visit(AST* ast)
 
 void GenerateVisitor::VisitNode(ASTNode* node)
 {
-	int size = node->nodes.size();
+	int size = node->Nodes.size();
 	for (int i = 0; i < size; ++i)
 	{
-		VisitNode(node->nodes[i]);
+		VisitNode(node->Nodes[i]);
 	}
 	code.push_back(node->token);
 	if (node->token.Type == TOKENTYPE_ID)

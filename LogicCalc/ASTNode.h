@@ -8,7 +8,7 @@ public:
 	int Value = 0; //值
 	bool Known = false; //是否已经知道了值
 
-	std::vector<ASTNode*> nodes;
+	std::vector<ASTNode*> Nodes;
 
 	ASTNode(Token token) : token(token)
 	{}

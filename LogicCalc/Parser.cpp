@@ -14,8 +14,8 @@
 			match(token.Type);\
 			ASTNode *node2 = LowerExpr();\
 			ASTNode *newNode = new ASTNode(savedToken);\
-			newNode->nodes.push_back(node1);\
-			newNode->nodes.push_back(node2);\
+			newNode->Nodes.push_back(node1);\
+			newNode->Nodes.push_back(node2);\
 			node1 = newNode;\
 			continue;\
 		}\
@@ -114,7 +114,7 @@ ASTNode* Parser::unary_expr()
 		node = new ASTNode(token);
 		match(token.Type);
 		ASTNode *subNode = unary_expr();
-		node->nodes.push_back(subNode);
+		node->Nodes.push_back(subNode);
 		return node;
 		break;
 	}

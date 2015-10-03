@@ -19,72 +19,77 @@ void PruningVisitor::Visit(AST *ast)
 /*
 	VisitNode 会修改 node, 因此需要调用完毕之后再 *node
 */
-bool PruningVisitor::VisitNode(ASTNode **node)
+bool PruningVisitor::VisitNode(ASTNode **nodePtr)
 {
-	switch ((*node)->token.Type)
+	switch ((*nodePtr)->token.Type)
 	{
 	case TOKENTYPE_ID:
-		return VisitIDNode(node);
+		return VisitIDNode(nodePtr);
 		break;
 	case TOKENTYPE_NUMBER:
-		return VisitNumberNode(node);
+		return VisitNumberNode(nodePtr);
 		break;
 	case TOKENTYPE_OPADD:
-		return VisitAddNode(node);
+		return VisitAddNode(nodePtr);
 		break;
 	case TOKENTYPE_OPAND:
-		return VisitAndNode(node);
+		return VisitAndNode(nodePtr);
 		break;
 	case TOKENTYPE_OPBITAND:
-		return VisitBitandNode(node);
+		return VisitBitandNode(nodePtr);
 		break;
 	case TOKENTYPE_OPBITNOT:
-		return VisitBitnotNode(node);
+		return VisitBitnotNode(nodePtr);
 		break;
 	case TOKENTYPE_OPBITOR:
-		return VisitBitorNode(node);
+		return VisitBitorNode(nodePtr);
 		break;
 	case TOKENTYPE_OPBITXOR:
-		return VisitBitxorNode(node);
+		return VisitBitxorNode(nodePtr);
 		break;
 	case TOKENTYPE_OPDIV:
-		return VisitDivNode(node);
+		return VisitDivNode(nodePtr);
 		break;
 	case TOKENTYPE_OPDUALIMP:
-		return VisitDualimpNode(node);
+		return VisitDualimpNode(nodePtr);
 		break;
 	case TOKENTYPE_OPEQU:
+		throw "Not Implemented";
 		break;
 	case TOKENTYPE_OPGT:
+		throw "Not Implemented";
 		break;
 	case TOKENTYPE_OPGTE:
+		throw "Not Implemented";
 		break;
 	case TOKENTYPE_OPIMP:
-		return VisitImpNode(node);
+		return VisitImpNode(nodePtr);
 		break;
 	case TOKENTYPE_OPLT:
+		throw "Not Implemented";
 		break;
 	case TOKENTYPE_OPLTE:
+		throw "Not Implemented";
 		break;
 	case TOKENTYPE_OPMOD:
-		return VisitModNode(node);
+		return VisitModNode(nodePtr);
 		break;
 	case TOKENTYPE_OPMUL:
-		return VisitMulNode(node);
+		return VisitMulNode(nodePtr);
 		break;
 	case TOKENTYPE_OPNOT:
-		return VisitNotNode(node);
+		return VisitNotNode(nodePtr);
 		break;
 	case TOKENTYPE_OPOR:
-		return VisitOrNode(node);
+		return VisitOrNode(nodePtr);
 		break;
 	case TOKENTYPE_OPSUB:
-		return VisitSubNode(node);
+		return VisitSubNode(nodePtr);
 		break;
 	case TOKENTYPE_OPTAUIMP:
 		break;
 	case TOKENTYPE_OPXOR:
-		return VisitXorNode(node);
+		return VisitXorNode(nodePtr);
 		break;
 	default:
 		break;
@@ -92,761 +97,761 @@ bool PruningVisitor::VisitNode(ASTNode **node)
 	return false;
 }
 
-bool PruningVisitor::VisitDualimpNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitDualimpNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
 
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		bool value = left->Value == right->Value;
+		bool value = leftNode->Value == rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
-	else if (CompareVisitor::Compare(left, right)) //P<->P === 1
+	else if (CompareVisitor::Compare(leftNode, rightNode)) //P<->P === 1
 	{
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, 1);
 		return true;
 	}
-	else if ((leftKnown && left->Value == 0)) //0<->x === !x
+	else if ((leftNodeKnown && leftNode->Value == 0)) //0<->x === !x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
-		newNode->nodes.push_back(right);
+		newNode->Nodes.push_back(rightNode);
 
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (leftKnown && left->Value == 1) //1<->x === x
+	else if (leftNodeKnown && leftNode->Value == 1) //1<->x === x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
-		CopyTo(right, nodeptr);
+		CopyTo(rightNode, nodePtr);
 
-		return rightKnown;
+		return rightNodeKnown;
 	}
-	else if (rightKnown && right->Value == 0) //x<->0 === !x
+	else if (rightNodeKnown && rightNode->Value == 0) //x<->0 === !x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
-		newNode->nodes.push_back(left);
+		newNode->Nodes.push_back(leftNode);
 
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (rightKnown && right->Value == 1) //x<->1 === x
+	else if (rightNodeKnown && rightNode->Value == 1) //x<->1 === x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		CopyTo(left, nodeptr);
+		CopyTo(leftNode, nodePtr);
 
-		return leftKnown;
+		return leftNodeKnown;
 	}
 
 	return false;
 }
 
-bool PruningVisitor::VisitImpNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitImpNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
 
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
 	//P->Q === !P||Q
 	ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPOR, "||"));
 
 	ASTNode *newSubNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
-	newSubNode->nodes.push_back(left);
+	newSubNode->Nodes.push_back(leftNode);
 
-	newNode->nodes.push_back(newSubNode);
-	newNode->nodes.push_back(right);
+	newNode->Nodes.push_back(newSubNode);
+	newNode->Nodes.push_back(rightNode);
 
 	bool newKnown = VisitNode(&newNode);
 
-	CopyTo(newNode, nodeptr);
+	CopyTo(newNode, nodePtr);
 
 	return newKnown;
 }
 
-bool PruningVisitor::VisitOrNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
 
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if ((leftKnown && left->Value == 1) || (rightKnown && right->Value == 1))
+	if ((leftNodeKnown && leftNode->Value == 1) || (rightNodeKnown && rightNode->Value == 1))
 	{
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
-		node->nodes.clear();
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
 		SetKnown(node, 1);
 		return true;
 	}
-	else if (leftKnown && left->Value == 0)
+	else if (leftNodeKnown && leftNode->Value == 0)
 	{
-		if (rightKnown && right->Value == 0)
+		if (rightNodeKnown && rightNode->Value == 0)
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 0);
 			return true;
 		}
-		else //!rightKnown
+		else //!rightNodeKnown
 		{
-			delete left;
-			*leftptr = left = NULL;
-			CopyTo(right, nodeptr);
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			CopyTo(rightNode, nodePtr);
 			return false;
 		}
 	}
-	else if (rightKnown && right->Value == 0) //!leftHasValue
+	else if (rightNodeKnown && rightNode->Value == 0) //!leftNodeHasValue
 	{
-		delete right;
-		*rightptr = right = NULL;
-		CopyTo(left, nodeptr);
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		CopyTo(leftNode, nodePtr);
 		return false;
 	}
-	else //!leftKnown && !rightKnown
+	else //!leftNodeKnown && !rightNodeKnown
 	{
-		if (CompareVisitor::Compare(left, right)) //P||P===P
+		if (CompareVisitor::Compare(leftNode, rightNode)) //P||P===P
 		{
-			delete right;
-			*rightptr = right = NULL;
-			CopyTo(left, nodeptr);
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			CopyTo(leftNode, nodePtr);
 			return false;
 		}
-		else if (left->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(left->nodes[0], right)) //!P||P===1
+		else if (leftNode->token.Type == TOKENTYPE_OPNOT &&
+			CompareVisitor::Compare(leftNode->Nodes[0], rightNode)) //!P||P===1
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 1);
 			return true;
 		}
-		else if (right->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(right->nodes[0], left)) //P||!P===1
+		else if (rightNode->token.Type == TOKENTYPE_OPNOT &&
+			CompareVisitor::Compare(rightNode->Nodes[0], leftNode)) //P||!P===1
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 1);
 			return true;
 		}
-		else if (left->token.Type == TOKENTYPE_OPAND &&
-			(CompareVisitor::Compare(left->nodes[0], right) ||
-			CompareVisitor::Compare(left->nodes[1], right))) //(P&&Q)||P===P, (Q&&P)||P===P
+		else if (leftNode->token.Type == TOKENTYPE_OPAND &&
+			(CompareVisitor::Compare(leftNode->Nodes[0], rightNode) ||
+			CompareVisitor::Compare(leftNode->Nodes[1], rightNode))) //(P&&Q)||P===P, (Q&&P)||P===P
 		{
-			delete left;
-			*leftptr = left = NULL;
-			CopyTo(right, nodeptr);
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			CopyTo(rightNode, nodePtr);
 			return false;
 		}
-		else if (right->token.Type == TOKENTYPE_OPAND &&
-			(CompareVisitor::Compare(right->nodes[0], left) ||
-			CompareVisitor::Compare(right->nodes[1], left))) //P||(P&&Q)===P, P||(Q&&P)===P
+		else if (rightNode->token.Type == TOKENTYPE_OPAND &&
+			(CompareVisitor::Compare(rightNode->Nodes[0], leftNode) ||
+			CompareVisitor::Compare(rightNode->Nodes[1], leftNode))) //P||(P&&Q)===P, P||(Q&&P)===P
 		{
-			delete right;
-			*rightptr = right = NULL;
-			CopyTo(left, nodeptr);
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			CopyTo(leftNode, nodePtr);
 			return false;
 		}
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitXorNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitXorNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
 
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		bool value = left->Value != right->Value;
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
-		node->nodes.clear();
+		bool value = leftNode->Value != rightNode->Value;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
-	else if (CompareVisitor::Compare(left, right)) //P^^P === 0
+	else if (CompareVisitor::Compare(leftNode, rightNode)) //P^^P === 0
 	{
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
-		node->nodes.clear();
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
 		SetKnown(node, 0);
 		return true;
 	}
-	else if ((leftKnown && left->Value == 1)) //1^^x === !x
+	else if ((leftNodeKnown && leftNode->Value == 1)) //1^^x === !x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
-		newNode->nodes.push_back(right);
+		newNode->Nodes.push_back(rightNode);
 
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (leftKnown && left->Value == 0) //0^x === x
+	else if (leftNodeKnown && leftNode->Value == 0) //0^x === x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
-		CopyTo(right, nodeptr);
+		CopyTo(rightNode, nodePtr);
 
-		return rightKnown;
+		return rightNodeKnown;
 	}
-	else if (rightKnown && right->Value == 1) //x^1 === !x
+	else if (rightNodeKnown && rightNode->Value == 1) //x^1 === !x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPNOT, "!"));
-		newNode->nodes.push_back(left);
+		newNode->Nodes.push_back(leftNode);
 
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (rightKnown && right->Value == 0) //x^0 === x
+	else if (rightNodeKnown && rightNode->Value == 0) //x^0 === x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		CopyTo(left, nodeptr);
+		CopyTo(leftNode, nodePtr);
 
-		return leftKnown;
+		return leftNodeKnown;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitAndNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
 
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if ((leftKnown && left->Value == 0) || (rightKnown && right->Value == 0)) // 0&&P === 0, P&&0 === 0
+	if ((leftNodeKnown && leftNode->Value == 0) || (rightNodeKnown && rightNode->Value == 0)) // 0&&P === 0, P&&0 === 0
 	{
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
-		node->nodes.clear();
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
 		SetKnown(node, 0);
 		return true;
 	}
-	else if (leftKnown && left->Value == 1)
+	else if (leftNodeKnown && leftNode->Value == 1)
 	{
-		if (rightKnown && right->Value == 1) //1&&1 === 1
+		if (rightNodeKnown && rightNode->Value == 1) //1&&1 === 1
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 1);
 			return true;
 		}
 		else  //1&&P === P
 		{
-			delete left;
-			*leftptr = left = NULL;
-			CopyTo(right, nodeptr);
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			CopyTo(rightNode, nodePtr);
 			return false;
 		}
 	}
-	else if (rightKnown && right->Value == 1) //P&&1 === P
+	else if (rightNodeKnown && rightNode->Value == 1) //P&&1 === P
 	{
-		delete right;
-		*rightptr = right = NULL;
-		CopyTo(left, nodeptr);
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		CopyTo(leftNode, nodePtr);
 		return false;
 	}
 	else
 	{
-		if (CompareVisitor::Compare(left, right)) //P&&P===P
+		if (CompareVisitor::Compare(leftNode, rightNode)) //P&&P===P
 		{
-			delete right;
-			*rightptr = right = NULL;
-			CopyTo(left, nodeptr);
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			CopyTo(leftNode, nodePtr);
 			return false;
 		}
-		else if (left->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(left->nodes[0], right)) //!P&&P===0
+		else if (leftNode->token.Type == TOKENTYPE_OPNOT &&
+			CompareVisitor::Compare(leftNode->Nodes[0], rightNode)) //!P&&P===0
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 0);
 			return true;
 		}
-		else if (right->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(right->nodes[0], left)) //P&&!P===0
+		else if (rightNode->token.Type == TOKENTYPE_OPNOT &&
+			CompareVisitor::Compare(rightNode->Nodes[0], leftNode)) //P&&!P===0
 		{
-			delete left;
-			*leftptr = left = NULL;
-			delete right;
-			*rightptr = right = NULL;
-			node->nodes.clear();
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			node->Nodes.clear();
 			SetKnown(node, 0);
 			return true;
 		}
-		else if (left->token.Type == TOKENTYPE_OPOR &&
-			(CompareVisitor::Compare(left->nodes[0], right) ||
-			CompareVisitor::Compare(left->nodes[1], right))) //(P||Q)&&P===P, (Q||P)&&P===P
+		else if (leftNode->token.Type == TOKENTYPE_OPOR &&
+			(CompareVisitor::Compare(leftNode->Nodes[0], rightNode) ||
+			CompareVisitor::Compare(leftNode->Nodes[1], rightNode))) //(P||Q)&&P===P, (Q||P)&&P===P
 		{
-			delete left;
-			*leftptr = left = NULL;
-			CopyTo(right, nodeptr);
+			delete leftNode;
+			*leftNodePtr = leftNode = NULL;
+			CopyTo(rightNode, nodePtr);
 			return false;
 		}
-		else if (right->token.Type == TOKENTYPE_OPOR &&
-			(CompareVisitor::Compare(right->nodes[0], left) ||
-			CompareVisitor::Compare(right->nodes[1], left))) //P&&(P||Q)===P, P&&(Q||P)===P
+		else if (rightNode->token.Type == TOKENTYPE_OPOR &&
+			(CompareVisitor::Compare(rightNode->Nodes[0], leftNode) ||
+			CompareVisitor::Compare(rightNode->Nodes[1], leftNode))) //P&&(P||Q)===P, P&&(Q||P)===P
 		{
-			delete right;
-			*rightptr = right = NULL;
-			CopyTo(left, nodeptr);
+			delete rightNode;
+			*rightNodePtr = rightNode = NULL;
+			CopyTo(leftNode, nodePtr);
 			return false;
 		}
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitBitnotNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitBitnotNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **subNodePtr = &(node->nodes[0]);
-	bool subKnown = VisitNode(subNodePtr);
-	ASTNode *subNode = *subNodePtr;
+	ASTNode **subnodePtr = &(node->Nodes[0]);
+	bool subKnown = VisitNode(subnodePtr);
+	ASTNode *subNode = *subnodePtr;
 	if (subKnown)
 	{
 		int value = ~subNode->Value;
 		delete subNode;
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	else if (subNode->token.Type == TOKENTYPE_OPBITNOT) //~~x === x
 	{
-		ASTNode *subSubNode = subNode->nodes[0];
-		subNode->nodes.clear();
+		ASTNode *subSubNode = subNode->Nodes[0];
+		subNode->Nodes.clear();
 		delete subNode;
-		*subNodePtr = subNode = NULL;
+		*subnodePtr = subNode = NULL;
 
-		CopyTo(subSubNode, nodeptr);
+		CopyTo(subSubNode, nodePtr);
 		return subSubNode->Known;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitBitorNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitBitorNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if ((leftKnown && left->Value == 0xFFFFFFFF) || (rightKnown && right->Value == 0xFFFFFFFF))
+	if ((leftNodeKnown && leftNode->Value == 0xFFFFFFFF) || (rightNodeKnown && rightNode->Value == 0xFFFFFFFF))
 	{
-		delete left;
-		delete right;
-		node->nodes.clear();
+		delete leftNode;
+		delete rightNode;
+		node->Nodes.clear();
 		SetKnown(node, 0xFFFFFFFF);
 		return true;
 	}
-	else if (leftKnown && left->Value == 0)
+	else if (leftNodeKnown && leftNode->Value == 0)
 	{
-		delete left;
-		CopyTo(right, nodeptr);
+		delete leftNode;
+		CopyTo(rightNode, nodePtr);
 		return false;
 	}
-	else if (rightKnown && right->Value == 0)
+	else if (rightNodeKnown && rightNode->Value == 0)
 	{
-		delete right;
-		CopyTo(left, nodeptr);
+		delete rightNode;
+		CopyTo(leftNode, nodePtr);
 		return false;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitBitxorNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitBitxorNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if ((leftKnown && left->Value == 0xFFFFFFFF)) //1^x === ~x
+	if ((leftNodeKnown && leftNode->Value == 0xFFFFFFFF)) //1^x === ~x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPBITNOT, "~"));
-		newNode->nodes.push_back(right);
+		newNode->Nodes.push_back(rightNode);
 		
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (leftKnown && left->Value == 0) //0^x === x
+	else if (leftNodeKnown && leftNode->Value == 0) //0^x === x
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
-		CopyTo(right, nodeptr);
+		CopyTo(rightNode, nodePtr);
 
-		return rightKnown;
+		return rightNodeKnown;
 	}
-	else if (rightKnown && right->Value == 0xFFFFFFFF) //x^1 === ~x
+	else if (rightNodeKnown && rightNode->Value == 0xFFFFFFFF) //x^1 === ~x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
 		ASTNode *newNode = new ASTNode(Token(TOKENTYPE_OPBITNOT, "~"));
-		newNode->nodes.push_back(left);
+		newNode->Nodes.push_back(leftNode);
 
 		bool newKnown = VisitNode(&newNode);
-		CopyTo(newNode, nodeptr);
+		CopyTo(newNode, nodePtr);
 
 		return newKnown;
 	}
-	else if (rightKnown && right->Value == 0) //x^0 === x
+	else if (rightNodeKnown && rightNode->Value == 0) //x^0 === x
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		CopyTo(left, nodeptr);
+		CopyTo(leftNode, nodePtr);
 
-		return leftKnown;
+		return leftNodeKnown;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitBitandNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitBitandNode(ASTNode **nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if ((leftKnown && left->Value == 0) || (rightKnown && right->Value == 0))
+	if ((leftNodeKnown && leftNode->Value == 0) || (rightNodeKnown && rightNode->Value == 0))
 	{
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, 0);
 		return true;
 	}
-	else if (leftKnown && left->Value == 0xFFFFFFFF)
+	else if (leftNodeKnown && leftNode->Value == 0xFFFFFFFF)
 	{
-		delete left;
-		*leftptr = left = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
 
-		CopyTo(right, nodeptr);
-		return rightKnown;
+		CopyTo(rightNode, nodePtr);
+		return rightNodeKnown;
 	}
-	else if (rightKnown && right->Value == 0xFFFFFFFF) 
+	else if (rightNodeKnown && rightNode->Value == 0xFFFFFFFF) 
 	{
-		delete right;
-		*rightptr = right = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		CopyTo(left, nodeptr);
-		return leftKnown;
+		CopyTo(leftNode, nodePtr);
+		return leftNodeKnown;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitAddNode(ASTNode**nodeptr)
+bool PruningVisitor::VisitAddNode(ASTNode**nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		int value = left->Value + right->Value;
+		int value = leftNode->Value + rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitSubNode(ASTNode**nodeptr)
+bool PruningVisitor::VisitSubNode(ASTNode**nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		int value = left->Value - right->Value;
+		int value = leftNode->Value - rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitMulNode(ASTNode**nodeptr)
+bool PruningVisitor::VisitMulNode(ASTNode**nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		int value = left->Value * right->Value;
+		int value = leftNode->Value * rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitDivNode(ASTNode**nodeptr)
+bool PruningVisitor::VisitDivNode(ASTNode**nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		int value = left->Value / right->Value;
+		int value = leftNode->Value / rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitModNode(ASTNode**nodeptr)
+bool PruningVisitor::VisitModNode(ASTNode**nodePtr)
 {
-	ASTNode *node = *nodeptr;
+	ASTNode *node = *nodePtr;
 
-	ASTNode **leftptr, **rightptr;
-	leftptr = &(node->nodes[0]);
-	rightptr = &(node->nodes[1]);
-	bool leftKnown = VisitNode(leftptr),
-		rightKnown = VisitNode(rightptr);
+	ASTNode **leftNodePtr, **rightNodePtr;
+	leftNodePtr = &(node->Nodes[0]);
+	rightNodePtr = &(node->Nodes[1]);
+	bool leftNodeKnown = VisitNode(leftNodePtr),
+		rightNodeKnown = VisitNode(rightNodePtr);
 
-	ASTNode *left = *leftptr,
-		*right = *rightptr;
+	ASTNode *leftNode = *leftNodePtr,
+		*rightNode = *rightNodePtr;
 
-	if (leftKnown && rightKnown)
+	if (leftNodeKnown && rightNodeKnown)
 	{
-		int value = left->Value % right->Value;
+		int value = leftNode->Value % rightNode->Value;
 
-		delete left;
-		*leftptr = left = NULL;
-		delete right;
-		*rightptr = right = NULL;
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
 
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitNotNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitNotNode(ASTNode **nodePtr)
 {
-	auto node = *nodeptr;
+	auto node = *nodePtr;
 
-	ASTNode **subNodePtr = &(node->nodes[0]);
-	bool subKnown = VisitNode(subNodePtr);
-	ASTNode *subNode = *subNodePtr;
+	ASTNode **subnodePtr = &(node->Nodes[0]);
+	bool subKnown = VisitNode(subnodePtr);
+	ASTNode *subNode = *subnodePtr;
 	
 	if (subKnown)
 	{
 		int value = !subNode->Value;
 		delete subNode;
-		node->nodes.clear();
+		node->Nodes.clear();
 		SetKnown(node, value);
 		return true;
 	}
 	else if (subNode->token.Type == TOKENTYPE_OPNOT) //!!x === x
 	{
-		ASTNode *subSubNode = subNode->nodes[0];
-		subNode->nodes.clear();
+		ASTNode *subSubNode = subNode->Nodes[0];
+		subNode->Nodes.clear();
 		delete subNode;
-		*subNodePtr = subNode = NULL;
+		*subnodePtr = subNode = NULL;
 
-		CopyTo(subSubNode, nodeptr);
+		CopyTo(subSubNode, nodePtr);
 		return subSubNode->Known;
 	}
 	return false;
 }
 
-bool PruningVisitor::VisitIDNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitIDNode(ASTNode **nodePtr)
 {
 	return false;
 }
 
-bool PruningVisitor::VisitNumberNode(ASTNode **nodeptr)
+bool PruningVisitor::VisitNumberNode(ASTNode **nodePtr)
 {
-	auto node = *nodeptr;
+	auto node = *nodePtr;
 
 	node->Value = StringHelper_toInt(node->token.Value);
 	node->Known = true;
@@ -855,7 +860,7 @@ bool PruningVisitor::VisitNumberNode(ASTNode **nodeptr)
 
 void PruningVisitor::CopyTo(ASTNode *srcptr, ASTNode **targetptr)
 {
-	(*targetptr)->nodes.clear(); //to avoid delete sub nodes
+	(*targetptr)->Nodes.clear(); //to avoid delete sub nodes
 	delete (*targetptr); 
 	*targetptr = srcptr;
 }
