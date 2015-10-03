@@ -1,2 +1,2 @@
 # LogicCalc
-LogicCalc
+Calculate logic expression.
