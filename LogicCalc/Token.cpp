@@ -10,7 +10,7 @@ Token::~Token()
 std::string Token_toName(TokenType type)
 {
 	static std::map<TokenType, std::string> names;
-	if (names[TOKENTYPE_EOF] == "") 
+	if (names[TOKENTYPE_EOF] == "")
 	{
 		//init
 		names[TOKENTYPE_ID] = "ID";
