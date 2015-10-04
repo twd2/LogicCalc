@@ -2,7 +2,7 @@
 #include "Matrix.h"
 
 
-Matrix::Matrix(int m, int n) :m(m), n(n)
+Matrix::Matrix(size_t m, size_t n) :m(m), n(n)
 {
 	data = new int[m*n];
 }
@@ -23,7 +23,7 @@ Matrix::~Matrix()
 //	memcpy(data, mat.data, sizeof(int)*m*n);
 //}
 
-int *Matrix::operator[] (int i)
+int *Matrix::operator[] (size_t i)
 {
 	return data + i*n;
 }

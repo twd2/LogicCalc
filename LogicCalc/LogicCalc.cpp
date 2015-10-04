@@ -11,16 +11,16 @@ std::pair<std::vector<Token>, IdGenerator> compile(std::string data)
 	Parser parser(tokens);
 	AST *result = parser.Parse();
 
-	PruningVisitor::Visit(result); //delete rubbish!
+	PruningVisitor::Visit(result); //delete rubbish
 
 	GenerateVisitor generator;
-	std::vector<Token> &code = generator.Visit(result); //generate!
+	std::vector<Token> &code = generator.Visit(result); //generate
 
 	delete result;
 
 	//we want to use lexerid as id.
-	int size = code.size();
-	for (int i = 0; i < size; ++i)
+	size_t size = code.size();
+	for (size_t i = 0; i < size; ++i)
 	{
 		code[i].ID = code[i].LexerID;
 	}
@@ -38,19 +38,20 @@ void print(std::vector<Token> &code)
 	std::cout << std::endl;
 }
 
+int calc(int *stack, std::vector<Token> &code, int values[])
+{
+
 #define STACK_PUSH(val) stack[++top]=(val)
 #define STACK_TOP() (stack[top])
 #define STACK_POP() (stack[top--])
 
-int calc(int *stack, std::vector<Token> &code, int values[])
-{
-	int size = code.size();
+	size_t size = code.size();
 
 	int top = -1;
 
 	int left, right;
 
-	for (int i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
 		Token &token = code[i];
 		switch (token.Type)
@@ -142,7 +143,7 @@ int calc(int *stack, std::vector<Token> &code, int values[])
 Matrix *exprToTable(std::vector<Token> &code, IdGenerator &ids)
 {
 	std::vector<std::string> &symbols = ids.GetKeys();
-	int symbolCount = symbols.size();
+	size_t symbolCount = symbols.size();
 
 	int *values = new int[symbolCount];
 
@@ -151,14 +152,14 @@ Matrix *exprToTable(std::vector<Token> &code, IdGenerator &ids)
 	Matrix *table = new Matrix(count, symbolCount + 1);
 	Matrix &mat = *table;
 
-	int codeSize = code.size();
+	size_t codeSize = code.size();
 	int *stack = new int[codeSize];
 
 	for (int i = 0; i < count; ++i)
 	{
 		int *row = mat[i];
 		//枚举可能的取值
-		for (int id = 0; id < symbolCount; ++id)
+		for (size_t id = 0; id < symbolCount; ++id)
 		{
 			values[id] = (i >> (symbolCount - id - 1)) & 1;
 			row[id] = values[id];
@@ -177,24 +178,24 @@ Matrix *exprToTable(std::vector<Token> &code, IdGenerator &ids)
 void printTable(IdGenerator &ids, Matrix &table)
 {
 	std::vector<std::string> &symbols = ids.GetKeys();
-	int symbolCount = symbols.size();
+	size_t symbolCount = symbols.size();
 
-	for (int i = 0; i < symbolCount; ++i)
+	for (size_t i = 0; i < symbolCount; ++i)
 	{
-		std::cout << symbols[i] << " ";
+		std::cout << symbols[i] << "\t";
 	}
 	std::cout << "expr" << std::endl;
 
-	int count = table.m;
+	size_t count = table.m;
 
-	for (int r = 0; r < count; ++r)
+	for (size_t r = 0; r < count; ++r)
 	{
 		int *row = table[r];
-		for (int i = 0; i < symbolCount; ++i)
+		for (size_t i = 0; i < symbolCount; ++i)
 		{
-			std::cout << row[i] << " ";
+			std::cout << row[i] << "\t";
 		}
-		std::cout << "   " << row[symbolCount] << std::endl;
+		std::cout << row[symbolCount] << std::endl;
 	}
 }
 
@@ -203,17 +204,17 @@ std::string toDNF(IdGenerator &ids, Matrix &table)
 	std::string result = "   ";
 
 	std::vector<std::string> &symbols = ids.GetKeys();
-	int symbolCount = symbols.size();
-	int count = table.m;
+	size_t symbolCount = symbols.size();
+	size_t count = table.m;
 
-	for (int r = 0; r < count; ++r)
+	for (size_t r = 0; r < count; ++r)
 	{
 		int *row = table[r];
 
 		if (row[symbolCount])
 		{
 			result += "(";
-			for (int i = 0; i < symbolCount; ++i)
+			for (size_t i = 0; i < symbolCount; ++i)
 			{
 				result += (row[i] ? "" : "!") + symbols[i];
 				if (i < symbolCount - 1)
@@ -240,17 +241,17 @@ std::string toCNF(IdGenerator &ids, Matrix &table)
 	std::string result = "   ";
 
 	std::vector<std::string> &symbols = ids.GetKeys();
-	int symbolCount = symbols.size();
-	int count = table.m;
+	size_t symbolCount = symbols.size();
+	size_t count = table.m;
 
-	for (int r = count - 1; r >= 0; --r)
+	for (ptrdiff_t r = count - 1; r >= 0; --r)
 	{
 		int *row = table[r];
 
 		if (!row[symbolCount])
 		{
 			result += "(";
-			for (int i = 0; i < symbolCount; ++i)
+			for (size_t i = 0; i < symbolCount; ++i)
 			{
 				result += (!row[i] ? "" : "!") + symbols[i];
 				if (i < symbolCount - 1)

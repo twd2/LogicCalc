@@ -42,8 +42,8 @@ private:
 
 	std::vector<Token> &tokens;
 
-	int length;
-	int index = 0;
+	size_t length;
+	size_t index = 0;
 
 	void match(TokenType);
 

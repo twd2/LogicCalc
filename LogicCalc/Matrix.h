@@ -2,12 +2,12 @@
 class Matrix
 {
 public:
-	Matrix(int, int);
+	Matrix(size_t, size_t);
 	~Matrix();
 	
 
-	int m, n;
-	int *operator[] (int i);
+	size_t m, n;
+	int *operator[] (size_t i);
 
 private:
 	int *data = NULL;

@@ -26,8 +26,8 @@ private:
 
 	std::vector<std::string> reservedWords;
 
-	int length;
-	int index = 0;
+	size_t length;
+	size_t index = 0;
 
 	bool hasNext();
 	std::string nextChar();

@@ -17,8 +17,8 @@ std::vector<Token> GenerateVisitor::Visit(AST* ast)
 
 void GenerateVisitor::VisitNode(ASTNode* node)
 {
-	int size = node->Nodes.size();
-	for (int i = 0; i < size; ++i)
+	size_t size = node->Nodes.size();
+	for (size_t i = 0; i < size; ++i)
 	{
 		VisitNode(node->Nodes[i]);
 	}
