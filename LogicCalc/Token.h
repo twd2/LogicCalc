@@ -3,7 +3,8 @@
 enum TokenType
 {
 	TOKENTYPE_ID, // [$_A-Za-z][$_A-Za-z0-9]*
-	TOKENTYPE_NUMBER, // [0-9]
+	TOKENTYPE_INTNUMBER, // [0-9]+
+	TOKENTYPE_FLOATNUMBER, //[0-9]+\.[0-9]* | \.[0-9]+
 	TOKENTYPE_LBRACKET, // (
 	TOKENTYPE_RBRACKET, // )
 	TOKENTYPE_OPNOT, // !
@@ -36,6 +37,9 @@ class Token
 public:
 	TokenType Type;
 	std::string Value;
+	int LexerID, ID; //ID for TOKENTYPE_ID
+	int IntValue; //IntValue
+	double FloatValue; //TODO: FloatValue
 
 	Token(TokenType type, std::string value) : Type(type), Value(value)
 	{}

@@ -3,17 +3,18 @@
 
 Token::~Token()
 {
-	//std::cout << "deleting token" << std::endl;
+
 }
 
 
 std::string Token_toName(TokenType type)
 {
 	static std::map<TokenType, std::string> names;
-	if (names[TOKENTYPE_EOF] == "")
+	if (names[TOKENTYPE_EOF] == "") 
 	{
+		//init
 		names[TOKENTYPE_ID] = "ID";
-		names[TOKENTYPE_NUMBER] = "NUMBER";
+		names[TOKENTYPE_INTNUMBER] = "NUMBER";
 		names[TOKENTYPE_LBRACKET] = "LBRACKET";
 		names[TOKENTYPE_RBRACKET] = "RBRACKET";
 		names[TOKENTYPE_OPNOT] = "OPNOT";

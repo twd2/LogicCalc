@@ -3,7 +3,6 @@
 
 ASTNode::~ASTNode()
 {
-	//std::cout << "deleting node" << std::endl;
 	int size = Nodes.size();
 	for (int i = 0; i < size; ++i)
 	{

@@ -8,8 +8,6 @@ Lexer::~Lexer()
 
 std::vector<Token> Lexer::Do()
 {
-	std::vector<std::string> symbols;
-
 	int lineNumber = 1;
 	std::vector<Token> tokens;
 	while (index < length)
@@ -31,8 +29,9 @@ std::vector<Token> Lexer::Do()
 			}
 			if (!isReserved(word))
 			{
-				tokens.push_back(Token(TOKENTYPE_ID, word));
-				symbols.push_back(word);
+				Token token(TOKENTYPE_ID, word);
+				token.LexerID = Ids.GetID(word);
+				tokens.push_back(token);
 			}
 			else
 			{
@@ -55,7 +54,9 @@ std::vector<Token> Lexer::Do()
 				++index;
 				number += data[index];
 			}
-			tokens.push_back(Token(TOKENTYPE_NUMBER, number));
+			Token token(TOKENTYPE_INTNUMBER, number);
+			token.IntValue = StringHelper_toInt(number);
+			tokens.push_back(token);
 		}
 		else if (current == '(')
 		{
@@ -197,10 +198,6 @@ std::vector<Token> Lexer::Do()
 		}
 		++index;
 	}
-	Symbols.resize(symbols.size());
-	std::sort(symbols.begin(), symbols.end());
-	auto last = std::unique_copy(symbols.begin(), symbols.end(), Symbols.begin());
-	Symbols.erase(last, Symbols.end());
 	return std::move(tokens);
 }
 

@@ -3,14 +3,10 @@
 
 #include "stdafx.h"
 
-std::pair<std::vector<Token>, std::vector<std::string> > compile(std::string data)
+std::pair<std::vector<Token>, IdGenerator> compile(std::string data)
 {
-	std::vector<std::string> symbols;
-
 	Lexer lexer(data);
 	std::vector<Token> &tokens = lexer.Do();
-
-	symbols = lexer.Symbols;
 
 	Parser parser(tokens);
 	AST *result = parser.Parse();
@@ -20,11 +16,16 @@ std::pair<std::vector<Token>, std::vector<std::string> > compile(std::string dat
 	GenerateVisitor generator;
 	std::vector<Token> &code = generator.Visit(result); //generate!
 
-	//symbols = generator.Symbols;
-
 	delete result;
 
-	return std::make_pair(code, symbols);
+	//we want to use lexerid as id.
+	int size = code.size();
+	for (int i = 0; i < size; ++i)
+	{
+		code[i].ID = code[i].LexerID;
+	}
+
+	return std::make_pair(code, lexer.Ids);
 }
 
 void print(std::vector<Token> &code)
@@ -37,65 +38,61 @@ void print(std::vector<Token> &code)
 	std::cout << std::endl;
 }
 
-int calc(std::vector<Token> &code, std::map<std::string, int> &values)
+#define STACK_PUSH(val) stack[++top]=(val)
+#define STACK_TOP() (stack[top])
+#define STACK_POP() (stack[top--])
+
+int calc(int *stack, std::vector<Token> &code, int values[])
 {
-	std::stack<int> stack;
+	int size = code.size();
+
+	int top = -1;
 
 	int left, right;
 
-	for each (const Token &token in code)
+	for (int i = 0; i < size; ++i)
 	{
+		Token &token = code[i];
 		switch (token.Type)
 		{
 		case TOKENTYPE_ID:
-			stack.push(values[token.Value]);
+			STACK_PUSH(values[token.ID]);
 			break;
-		case TOKENTYPE_NUMBER:
-			stack.push(StringHelper_toInt(token.Value));
+		case TOKENTYPE_INTNUMBER:
+			STACK_PUSH(token.IntValue);
 			break;
 		case TOKENTYPE_OPADD:
 			break;
 		case TOKENTYPE_OPAND:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(left && right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(left && right);
 			break;
 		case TOKENTYPE_OPBITAND:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(left & right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(left & right);
 			break;
 		case TOKENTYPE_OPBITNOT:
-			left = stack.top();
-			stack.pop();
-			stack.push(~left);
+			left = STACK_POP();
+			STACK_PUSH(~left);
 			break;
 		case TOKENTYPE_OPBITOR:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(left | right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(left | right);
 			break;
 		case TOKENTYPE_OPBITXOR:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(left ^ right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(left ^ right);
 			break;
 		case TOKENTYPE_OPDIV:
 			break;
 		case TOKENTYPE_OPDUALIMP:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push((left != 0) == (right != 0));
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH((left != 0) == (right != 0));
 			break;
 		case TOKENTYPE_OPEQU:
 			break;
@@ -104,11 +101,9 @@ int calc(std::vector<Token> &code, std::map<std::string, int> &values)
 		case TOKENTYPE_OPGTE:
 			break;
 		case TOKENTYPE_OPIMP:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(!left || right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(!left || right);
 			break;
 		case TOKENTYPE_OPLT:
 			break;
@@ -119,73 +114,69 @@ int calc(std::vector<Token> &code, std::map<std::string, int> &values)
 		case TOKENTYPE_OPMUL:
 			break;
 		case TOKENTYPE_OPNOT:
-			left = stack.top();
-			stack.pop();
-			stack.push(!left);
+			left = STACK_POP();
+			STACK_PUSH(!left);
 			break;
 		case TOKENTYPE_OPOR:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push(left || right);
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH(left || right);
 			break;
 		case TOKENTYPE_OPSUB:
 			break;
 		case TOKENTYPE_OPTAUIMP:
 			break;
 		case TOKENTYPE_OPXOR:
-			left = stack.top();
-			stack.pop();
-			right = stack.top();
-			stack.pop();
-			stack.push((left != 0) != (right != 0));
+			left = STACK_POP();
+			right = STACK_POP();
+			STACK_PUSH((left != 0) != (right != 0));
 			break;
 		default:
 			break;
 		}
 	}
-	left = stack.top();
-	stack.pop();
+	left = STACK_POP();
 	return left;
 }
 
-std::vector<std::vector<int> > exprToTable(std::vector<Token> &code, std::vector<std::string> &symbols)
+Matrix *exprToTable(std::vector<Token> &code, IdGenerator &ids)
 {
+	std::vector<std::string> &symbols = ids.GetKeys();
 	int symbolCount = symbols.size();
 
-	std::map<std::string, int> values;
+	int *values = new int[symbolCount];
 
 	int count = 1 << symbolCount;
 
-	/*for (int id = 0; id < symbolCount; ++id)
-	{
-		std::cout << symbols[id] << " ";
-	}
-	std::cout << "expr" << std::endl;*/
+	Matrix *table = new Matrix(count, symbolCount + 1);
+	Matrix &mat = *table;
 
-	std::vector<std::vector<int> > table;
-	table.reserve(count);
+	int codeSize = code.size();
+	int *stack = new int[codeSize];
 
 	for (int i = 0; i < count; ++i)
 	{
-		std::vector<int> row;
-		row.reserve(symbolCount + 1);
+		int *row = mat[i];
 		//枚举可能的取值
 		for (int id = 0; id < symbolCount; ++id)
 		{
-			row.push_back(values[symbols[id]] = (i >> (symbolCount - id - 1)) & 1);
+			values[id] = (i >> (symbolCount - id - 1)) & 1;
+			row[id] = values[id];
 		}
 
-		row.push_back(calc(code, values));
-		table.push_back(row);
-		//std::cout << "   " << ans << std::endl;
+		int ans = calc(stack, code, values);
+
+		row[symbolCount] = ans;
 	}
-	return std::move(table);
+
+	delete[] stack;
+	delete[] values;
+	return table;
 }
 
-void printTable(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+void printTable(IdGenerator &ids, Matrix &table)
 {
+	std::vector<std::string> &symbols = ids.GetKeys();
 	int symbolCount = symbols.size();
 
 	for (int i = 0; i < symbolCount; ++i)
@@ -194,8 +185,11 @@ void printTable(std::vector<std::string> &symbols, std::vector<std::vector<int> 
 	}
 	std::cout << "expr" << std::endl;
 
-	for each (auto &row in table)
+	int count = table.m;
+
+	for (int r = 0; r < count; ++r)
 	{
+		int *row = table[r];
 		for (int i = 0; i < symbolCount; ++i)
 		{
 			std::cout << row[i] << " ";
@@ -204,16 +198,17 @@ void printTable(std::vector<std::string> &symbols, std::vector<std::vector<int> 
 	}
 }
 
-std::string toDNF(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+std::string toDNF(IdGenerator &ids, Matrix &table)
 {
 	std::string result = "   ";
 
+	std::vector<std::string> &symbols = ids.GetKeys();
 	int symbolCount = symbols.size();
-	int count = table.size();
+	int count = table.m;
 
 	for (int r = 0; r < count; ++r)
 	{
-		auto &row = table[r];
+		int *row = table[r];
 
 		if (row[symbolCount])
 		{
@@ -240,16 +235,17 @@ std::string toDNF(std::vector<std::string> &symbols, std::vector<std::vector<int
 	return std::move(result);
 }
 
-std::string toCNF(std::vector<std::string> &symbols, std::vector<std::vector<int> > &table)
+std::string toCNF(IdGenerator &ids, Matrix &table)
 {
 	std::string result = "   ";
 
+	std::vector<std::string> &symbols = ids.GetKeys();
 	int symbolCount = symbols.size();
-	int count = table.size();
+	int count = table.m;
 
-	for (int r = 0; r < count; ++r)
+	for (int r = count - 1; r >= 0; --r)
 	{
-		auto &row = table[r];
+		int *row = table[r];
 
 		if (!row[symbolCount])
 		{
@@ -284,22 +280,26 @@ int _tmain(int argc, _TCHAR* argv[])
 		std::getline(std::cin, expr);
 		try
 		{
-			std::pair<std::vector<Token>, std::vector<std::string> > codeSymbolsPair = compile(expr);
+			std::pair<std::vector<Token>, IdGenerator> codeSymbolsPair = compile(expr);
 			std::vector<Token> &code = codeSymbolsPair.first;
-			std::vector<std::string> &symbols = codeSymbolsPair.second;
+			IdGenerator &ids = codeSymbolsPair.second;
 
 			print(code);
 			std::cout << std::endl;
 
-			auto table = exprToTable(code, symbols);
-			printTable(symbols, table);
+			Matrix *table = exprToTable(code, ids);
+
+			printTable(ids, *table);
 			std::cout << std::endl;
 
-			std::string DNF = toDNF(symbols, table);
+			std::string DNF = toDNF(ids, *table);
 			std::cout << "DNF:" << std::endl << DNF << std::endl << std::endl;
 
-			std::string CNF = toCNF(symbols, table);
+			std::string CNF = toCNF(ids, *table);
 			std::cout << "CNF:" << std::endl << CNF << std::endl << std::endl;
+			
+			delete table;
+		
 		}
 		catch (SyntaxError err)
 		{

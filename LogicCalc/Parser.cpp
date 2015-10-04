@@ -122,7 +122,7 @@ ASTNode* Parser::unary_expr()
 		break;
 	}
 	case TOKENTYPE_ID:
-	case TOKENTYPE_NUMBER:
+	case TOKENTYPE_INTNUMBER:
 	case TOKENTYPE_LBRACKET:
 		return factor();
 		break;
@@ -144,9 +144,9 @@ ASTNode* Parser::factor()
 		match(TOKENTYPE_ID);
 		return node;
 		break;
-	case TOKENTYPE_NUMBER:
+	case TOKENTYPE_INTNUMBER:
 		node = new ASTNode(token);
-		match(TOKENTYPE_NUMBER);
+		match(TOKENTYPE_INTNUMBER);
 		return node;
 		break;
 	case TOKENTYPE_LBRACKET:

@@ -7,7 +7,6 @@ AST::AST()
 
 AST::~AST()
 {
-	//std::cout << "deleting ast" << std::endl;
 	if (root != NULL)
 	{
 		delete root;

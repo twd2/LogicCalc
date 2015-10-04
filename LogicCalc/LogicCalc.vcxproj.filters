@@ -54,6 +54,12 @@
     <ClInclude Include="GenerateVisitor.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IdGenerator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -90,6 +96,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="GenerateVisitor.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IdGenerator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

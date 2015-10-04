@@ -26,7 +26,7 @@ bool PruningVisitor::VisitNode(ASTNode **nodePtr)
 	case TOKENTYPE_ID:
 		return VisitIDNode(nodePtr);
 		break;
-	case TOKENTYPE_NUMBER:
+	case TOKENTYPE_INTNUMBER:
 		return VisitNumberNode(nodePtr);
 		break;
 	case TOKENTYPE_OPADD:
@@ -868,7 +868,8 @@ void PruningVisitor::CopyTo(ASTNode *srcptr, ASTNode **targetptr)
 void PruningVisitor::SetKnown(ASTNode *node, int value)
 {
 	node->Value = value;
-	node->token.Type = TOKENTYPE_NUMBER;
+	node->token.Type = TOKENTYPE_INTNUMBER;
 	node->token.Value = StringHelper_toString(value);
+	node->token.IntValue = value;
 	node->Known = true;
 }

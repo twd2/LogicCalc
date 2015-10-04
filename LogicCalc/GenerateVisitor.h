@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <string>
+#include <vector>
+#include "IdGenerator.h"
 
 class GenerateVisitor
 {
@@ -10,7 +12,7 @@ public:
 	~GenerateVisitor();
 
 	std::vector<Token> Visit(AST*);
-	std::vector<std::string> Symbols;
+	IdGenerator Ids;
 
 private:
 

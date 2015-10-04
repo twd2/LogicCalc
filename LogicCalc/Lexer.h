@@ -6,6 +6,7 @@
 #include <map>
 #include "SyntaxError.h"
 #include "Token.h"
+#include "IdGenerator.h"
 
 class Lexer
 {
@@ -18,7 +19,7 @@ public:
 
 	~Lexer();
 	std::vector<Token> Do();
-	std::vector<std::string> Symbols;
+	IdGenerator Ids;
 
 private:
 	std::string &data;
