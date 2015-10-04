@@ -14,7 +14,7 @@ std::string Token_toName(TokenType type)
 	{
 		//init
 		names[TOKENTYPE_ID] = "ID";
-		names[TOKENTYPE_INTNUMBER] = "NUMBER";
+		names[TOKENTYPE_INTNUMBER] = "INTNUMBER";
 		names[TOKENTYPE_LBRACKET] = "LBRACKET";
 		names[TOKENTYPE_RBRACKET] = "RBRACKET";
 		names[TOKENTYPE_OPNOT] = "OPNOT";
