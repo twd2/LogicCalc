@@ -27,7 +27,16 @@ bool PruningVisitor::VisitNode(ASTNode **nodePtr)
 		return VisitIDNode(nodePtr);
 		break;
 	case TOKENTYPE_INTNUMBER:
-		return VisitNumberNode(nodePtr);
+		return VisitIntNumberNode(nodePtr);
+		break;
+	case TOKENTYPE_FLOATNUMBER:
+		// TODO: float number
+		break;
+	case TOKENTYPE_TRUE:
+		return VisitTrueNode(nodePtr);
+		break;
+	case TOKENTYPE_FALSE:
+		return VisitFalseNode(nodePtr);
 		break;
 	case TOKENTYPE_OPADD:
 		return VisitAddNode(nodePtr);
@@ -772,6 +781,10 @@ bool PruningVisitor::VisitDivNode(ASTNode**nodePtr)
 
 	if (leftNodeKnown && rightNodeKnown)
 	{
+		if (rightNode->Value == 0)
+		{
+			throw RuntimeError("Divided by zero.");
+		}
 		int value = leftNode->Value / rightNode->Value;
 
 		delete leftNode;
@@ -849,12 +862,28 @@ bool PruningVisitor::VisitIDNode(ASTNode **nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitNumberNode(ASTNode **nodePtr)
+bool PruningVisitor::VisitIntNumberNode(ASTNode **nodePtr)
 {
 	auto node = *nodePtr;
 
 	node->Value = StringHelper_toInt(node->token.Value);
 	node->Known = true;
+	return true;
+}
+
+bool PruningVisitor::VisitTrueNode(ASTNode **nodePtr)
+{
+	auto node = *nodePtr;
+
+	SetKnown(node, 1);
+	return true;
+}
+
+bool PruningVisitor::VisitFalseNode(ASTNode **nodePtr)
+{
+	auto node = *nodePtr;
+
+	SetKnown(node, 0);
 	return true;
 }
 

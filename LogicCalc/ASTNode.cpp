@@ -13,3 +13,4 @@ ASTNode::~ASTNode()
 		}
 	}
 }
+

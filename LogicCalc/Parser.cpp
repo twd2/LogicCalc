@@ -123,6 +123,9 @@ ASTNode* Parser::unary_expr()
 	}
 	case TOKENTYPE_ID:
 	case TOKENTYPE_INTNUMBER:
+	case TOKENTYPE_FLOATNUMBER:
+	case TOKENTYPE_TRUE:
+	case TOKENTYPE_FALSE:
 	case TOKENTYPE_LBRACKET:
 		return factor();
 		break;
@@ -140,13 +143,12 @@ ASTNode* Parser::factor()
 	switch (token.Type)
 	{
 	case TOKENTYPE_ID:
-		node = new ASTNode(token);
-		match(TOKENTYPE_ID);
-		return node;
-		break;
 	case TOKENTYPE_INTNUMBER:
+	case TOKENTYPE_FLOATNUMBER:
+	case TOKENTYPE_TRUE:
+	case TOKENTYPE_FALSE:
 		node = new ASTNode(token);
-		match(TOKENTYPE_INTNUMBER);
+		match(token.Type);
 		return node;
 		break;
 	case TOKENTYPE_LBRACKET:

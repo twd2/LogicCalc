@@ -13,8 +13,8 @@ CompareVisitor::~CompareVisitor()
 
 bool CompareVisitor::Compare(ASTNode *node1, ASTNode *node2)
 {
-	if (node1->token.Type != node2->token.Type) return false;
-	if (node1->token.Value != node2->token.Value) return false;
+	if (node1->token != node2->token) return false;
+
 	size_t size1 = node1->Nodes.size(),
 		size2 = node2->Nodes.size();
 	if (size1 != size2) return false;

@@ -16,3 +16,12 @@ int StringHelper_toInt(std::string a)
 	ss >> i;
 	return i;
 }
+
+double StringHelper_toDouble(std::string a)
+{
+	std::stringstream ss;
+	ss << a;
+	double d;
+	ss >> d;
+	return d;
+}

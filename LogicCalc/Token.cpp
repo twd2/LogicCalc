@@ -6,6 +6,15 @@ Token::~Token()
 
 }
 
+bool Token::operator==(Token & b)
+{
+	return Value == b.Value && Type == b.Type;
+}
+
+bool Token::operator!=(Token & b)
+{
+	return !(*this == b);
+}
 
 std::string Token_toName(TokenType type)
 {
@@ -13,8 +22,10 @@ std::string Token_toName(TokenType type)
 	if (names[TOKENTYPE_EOF] == "")
 	{
 		//init
+		names[TOKENTYPE_NOTTOKEN] = "?";
 		names[TOKENTYPE_ID] = "ID";
 		names[TOKENTYPE_INTNUMBER] = "INTNUMBER";
+		names[TOKENTYPE_FLOATNUMBER] = "FLOATNUMBER";
 		names[TOKENTYPE_LBRACKET] = "LBRACKET";
 		names[TOKENTYPE_RBRACKET] = "RBRACKET";
 		names[TOKENTYPE_OPNOT] = "OPNOT";
@@ -38,6 +49,9 @@ std::string Token_toName(TokenType type)
 		names[TOKENTYPE_OPLT] = "OPLT";
 		names[TOKENTYPE_OPLTE] = "OPLTE";
 		names[TOKENTYPE_OPEQU] = "OPEQU";
+		names[TOKENTYPE_OPDOT] = "OPDOT";
+		names[TOKENTYPE_TRUE] = "TRUE";
+		names[TOKENTYPE_FALSE] = "FALSE";
 		names[TOKENTYPE_WANDAI] = "WANDAI";
 		names[TOKENTYPE_EOF] = "EOF";
 	}

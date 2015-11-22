@@ -14,30 +14,31 @@ public:
 	Lexer(std::string &str) : data(str)
 	{
 		length = str.length();
-		reservedWords.push_back("wandai");
 	}
 
 	~Lexer();
 	std::vector<Token> Do();
 	IdGenerator Ids;
 
+	static TokenType Lexer::reservedWordType(std::string&);
+	static bool isBlank(char);
+	static bool isIdFirst(char);
+	static bool isId(char);
+	static bool isDigitFirst(char);
+	static bool isDigit(char);
+	static bool isLetter(char);
+	static bool isUppercase(char);
+	static bool isLowercase(char);
+
 private:
 	std::string &data;
-
-	std::vector<std::string> reservedWords;
 
 	size_t length;
 	size_t index = 0;
 
 	bool hasNext();
+	char getNext();
 	std::string nextChar();
 	bool nextIs(char);
-	bool isReserved(std::string&);
-	bool isBlank(char);
-	bool isIdFirst(char);
-	bool isId(char);
-	bool isDigit(char);
-	bool isLetter(char);
-	bool isUppercase(char);
-	bool isLowercase(char);
+	bool nextIs(bool(*)(char));
 };

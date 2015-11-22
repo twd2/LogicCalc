@@ -9,14 +9,14 @@ std::pair<std::vector<Token>, IdGenerator> compile(std::string data)
 	std::vector<Token> &tokens = lexer.Do();
 
 	Parser parser(tokens);
-	AST *result = parser.Parse();
+	AST *ast = parser.Parse();
 
-	PruningVisitor::Visit(result); //delete rubbish
+	PruningVisitor::Visit(ast); //delete rubbish
 
 	GenerateVisitor generator;
-	std::vector<Token> &code = generator.Visit(result); //generate
+	std::vector<Token> &code = generator.Visit(ast); //generate
 
-	delete result;
+	delete ast;
 
 	//we want to use lexerid as id.
 	size_t size = code.size();
@@ -62,16 +62,28 @@ int calc(int *stack, std::vector<Token> &code, int values[])
 		case TOKENTYPE_INTNUMBER:
 			STACK_PUSH(token.IntValue);
 			break;
+		case TOKENTYPE_FLOATNUMBER:
+			throw RuntimeError("Float calculation is not implemented.");
+			break;
+		case TOKENTYPE_TRUE:
+			STACK_PUSH(1);
+			break;
+		case TOKENTYPE_FALSE:
+			STACK_PUSH(0);
+			break;
 		case TOKENTYPE_OPADD:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left + right);
 			break;
 		case TOKENTYPE_OPAND:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(left && right);
 			break;
 		case TOKENTYPE_OPBITAND:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(left & right);
 			break;
 		case TOKENTYPE_OPBITNOT:
@@ -79,57 +91,89 @@ int calc(int *stack, std::vector<Token> &code, int values[])
 			STACK_PUSH(~left);
 			break;
 		case TOKENTYPE_OPBITOR:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(left | right);
 			break;
 		case TOKENTYPE_OPBITXOR:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(left ^ right);
 			break;
 		case TOKENTYPE_OPDIV:
+			right = STACK_POP();
+			left = STACK_POP();
+			if (right == 0)
+			{
+				throw RuntimeError("Divided by zero.");
+			}
+			STACK_PUSH(left / right);
 			break;
 		case TOKENTYPE_OPDUALIMP:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH((left != 0) == (right != 0));
 			break;
 		case TOKENTYPE_OPEQU:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left == right);
 			break;
 		case TOKENTYPE_OPGT:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left > right);
 			break;
 		case TOKENTYPE_OPGTE:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left >= right);
 			break;
 		case TOKENTYPE_OPIMP:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(!left || right);
 			break;
 		case TOKENTYPE_OPLT:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left < right);
 			break;
 		case TOKENTYPE_OPLTE:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left <= right);
 			break;
 		case TOKENTYPE_OPMOD:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left % right);
 			break;
 		case TOKENTYPE_OPMUL:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left * right);
 			break;
 		case TOKENTYPE_OPNOT:
 			left = STACK_POP();
 			STACK_PUSH(!left);
 			break;
 		case TOKENTYPE_OPOR:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH(left || right);
 			break;
 		case TOKENTYPE_OPSUB:
+			right = STACK_POP();
+			left = STACK_POP();
+			STACK_PUSH(left - right);
 			break;
 		case TOKENTYPE_OPTAUIMP:
+			//prove needed
 			break;
 		case TOKENTYPE_OPXOR:
-			left = STACK_POP();
 			right = STACK_POP();
+			left = STACK_POP();
 			STACK_PUSH((left != 0) != (right != 0));
 			break;
 		default:
@@ -275,9 +319,10 @@ std::string toCNF(IdGenerator &ids, Matrix &table)
 
 int _tmain(int argc, _TCHAR* argv[])
 {
-	std::string expr = "P||R&&Q||S->T";
 	do
 	{
+		std::string expr;
+		std::cout << ">";
 		std::getline(std::cin, expr);
 		try
 		{
@@ -300,17 +345,27 @@ int _tmain(int argc, _TCHAR* argv[])
 			std::cout << "CNF:" << std::endl << CNF << std::endl << std::endl;
 			
 			delete table;
-		
 		}
 		catch (SyntaxError err)
 		{
-			if (err.why.length() > 0)
+			if (err.what.length() > 0)
 			{
-				std::cout << "SyntaxError: " << err.why << std::endl;
+				std::cout << "SyntaxError: " << err.what << std::endl;
 			}
 			else
 			{
 				std::cout << "SyntaxError" << std::endl;
+			}
+		}
+		catch (RuntimeError err)
+		{
+			if (err.what.length() > 0)
+			{
+				std::cout << "RuntimeError: " << err.what << std::endl;
+			}
+			else
+			{
+				std::cout << "RuntimeError" << std::endl;
 			}
 		}
 	} while (true);// (data != "");
@@ -320,52 +375,3 @@ int _tmain(int argc, _TCHAR* argv[])
 
 	return 0;
 }
-
-/*code = compile("0&&P");
-print(code);
-code = compile("1&&P");
-print(code);
-code = compile("P&&P");
-print(code);
-code = compile("!P&&P");
-print(code);
-code = compile("P&&!P");
-print(code);
-code = compile("P&&(P||Q)");
-print(code);
-code = compile("(P||Q)&&(P||Q)");
-print(code);
-code = compile("(P||Q)&&P->P");
-print(code);
-code = compile("0||P");
-print(code);
-code = compile("1||P");
-print(code);
-code = compile("P||P");
-print(code);
-code = compile("!P||P");
-print(code);
-code = compile("P||!P");
-print(code);
-code = compile("P||(P&&Q)");
-print(code);
-code = compile("(P&&Q)||P");
-print(code);
-code = compile("(P&&Q)||P<->P");
-print(code);
-code = compile("a^^1");
-print(code);
-code = compile("(a^^1)&&a");
-print(code);
-code = compile("1^^a");
-print(code);
-code = compile("(0^^a)||(1^^a)");
-print(code);
-code = compile("!(!P->!!!!!!!!!!P)->(!P->!!!!!!!!!!P)");
-print(code);
-code = compile("~~~x");
-print(code);
-code = compile("!!!!!!!!!!P");
-print(code);
-code = compile("(P||Q||1)&&!(P||Q||1)<->0");
-print(code);*/

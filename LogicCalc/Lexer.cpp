@@ -8,78 +8,104 @@ Lexer::~Lexer()
 
 std::vector<Token> Lexer::Do()
 {
-	int lineNumber = 1;
+	ptrdiff_t lineNumber = 1, lineStart = -1;
 	std::vector<Token> tokens;
 	while (index < length)
 	{
 		char current = data[index];
 		if (isBlank(current))
 		{
-			if (current == '\n') ++lineNumber;
-			//skip
+			if (current == '\n')
+			{
+				++lineNumber;
+				lineStart = index;
+			}
+			// skip
 		}
 		else if (isIdFirst(current))
 		{
 			std::string word;
 			word += current;
-			while (hasNext() && isId(data[index + 1]))
+			while (nextIs(isId))
 			{
 				++index;
 				word += data[index];
 			}
-			if (!isReserved(word))
+
+			TokenType type;
+
+			if ((type = reservedWordType(word)) == TOKENTYPE_NOTTOKEN)
 			{
-				Token token(TOKENTYPE_ID, word);
+				Token token(TOKENTYPE_ID, word, lineNumber, index - lineStart);
 				token.LexerID = Ids.GetID(word);
 				tokens.push_back(token);
 			}
 			else
 			{
-				if (word == "wandai")
-				{
-					tokens.push_back(Token(TOKENTYPE_WANDAI, word));
-				}
-				else
-				{
-					//TODO: other reserved words
-				}
+				tokens.push_back(Token(type, word, lineNumber, index - lineStart));
 			}
 		}
-		else if (isDigit(current))
+		else if (isDigitFirst(current))
 		{
+			bool hasDot = false;
 			std::string number;
 			number += current;
-			while (hasNext() && isDigit(data[index + 1]))
+			if (current == '.')
+			{
+				hasDot = true;
+			}
+			while (nextIs(isDigit) || (!hasDot && nextIs('.')))
 			{
 				++index;
 				number += data[index];
+				if (data[index] == '.')
+				{
+					hasDot = true;
+				}
 			}
-			Token token(TOKENTYPE_INTNUMBER, number);
-			token.IntValue = StringHelper_toInt(number);
-			tokens.push_back(token);
+			if (!hasDot)
+			{
+				Token token(TOKENTYPE_INTNUMBER, number, lineNumber, index - lineStart);
+				token.IntValue = StringHelper_toInt(number);
+				tokens.push_back(token);
+			}
+			else
+			{
+				if (number == ".") // only a dot
+				{
+					Token token(TOKENTYPE_OPDOT, number, lineNumber, index - lineStart);
+					tokens.push_back(token);
+				}
+				else
+				{
+					Token token(TOKENTYPE_FLOATNUMBER, number, lineNumber, index - lineStart);
+					token.FloatValue = StringHelper_toDouble(number);
+					tokens.push_back(token);
+				}
+			}
 		}
 		else if (current == '(')
 		{
-			tokens.push_back(Token(TOKENTYPE_LBRACKET, "("));
+			tokens.push_back(Token(TOKENTYPE_LBRACKET, "(", lineNumber, index - lineStart));
 		}
 		else if (current == ')')
 		{
-			tokens.push_back(Token(TOKENTYPE_RBRACKET, ")"));
+			tokens.push_back(Token(TOKENTYPE_RBRACKET, ")", lineNumber, index - lineStart));
 		}
 		else if (current == '!')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPNOT, "!"));
+			tokens.push_back(Token(TOKENTYPE_OPNOT, "!", lineNumber, index - lineStart));
 		}
 		else if (current == '&')
 		{
 			if (nextIs('&'))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPAND, "&&"));
+				tokens.push_back(Token(TOKENTYPE_OPAND, "&&", lineNumber, index - lineStart));
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPBITAND, "&"));
+				tokens.push_back(Token(TOKENTYPE_OPBITAND, "&", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '|')
@@ -87,11 +113,11 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('|'))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPOR, "||"));
+				tokens.push_back(Token(TOKENTYPE_OPOR, "||", lineNumber, index - lineStart));
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPBITOR, "|"));
+				tokens.push_back(Token(TOKENTYPE_OPBITOR, "|", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '^')
@@ -99,27 +125,27 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('^'))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPXOR, "^^"));
+				tokens.push_back(Token(TOKENTYPE_OPXOR, "^^", lineNumber, index - lineStart));
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPBITXOR, "^"));
+				tokens.push_back(Token(TOKENTYPE_OPBITXOR, "^", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '~')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPBITNOT, "~"));
+			tokens.push_back(Token(TOKENTYPE_OPBITNOT, "~", lineNumber, index - lineStart));
 		}
 		else if (current == '-')
 		{
 			if (nextIs('>'))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPIMP, "->"));
+				tokens.push_back(Token(TOKENTYPE_OPIMP, "->", lineNumber, index - lineStart));
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPSUB, "-"));
+				tokens.push_back(Token(TOKENTYPE_OPSUB, "-", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '<')
@@ -127,7 +153,7 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPLTE, "<="));
+				tokens.push_back(Token(TOKENTYPE_OPLTE, "<=", lineNumber, index - lineStart));
 			}
 			else if (nextIs('-'))
 			{
@@ -135,7 +161,7 @@ std::vector<Token> Lexer::Do()
 				if (nextIs('>'))
 				{
 					++index;
-					tokens.push_back(Token(TOKENTYPE_OPDUALIMP, "<->"));
+					tokens.push_back(Token(TOKENTYPE_OPDUALIMP, "<->", lineNumber, index - lineStart));
 				}
 				else
 				{
@@ -144,7 +170,7 @@ std::vector<Token> Lexer::Do()
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPLT, "<"));
+				tokens.push_back(Token(TOKENTYPE_OPLT, "<", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '=')
@@ -152,16 +178,16 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('>'))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPTAUIMP, "=>"));
+				tokens.push_back(Token(TOKENTYPE_OPTAUIMP, "=>", lineNumber, index - lineStart));
 			}
 			else if(nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPEQU, "=="));
+				tokens.push_back(Token(TOKENTYPE_OPEQU, "==", lineNumber, index - lineStart));
 			}
 			else
 			{
-				throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting '>', '='");
+				throw SyntaxError("Lexer: Line " + StringHelper_toString(lineNumber) + ", Col " + StringHelper_toString(index - lineStart + 1) + ": Unexpected " + nextChar() + ", expecting '>', '='");
 			}
 		}
 		else if (current == '>')
@@ -169,32 +195,32 @@ std::vector<Token> Lexer::Do()
 			if (nextIs('='))
 			{
 				++index;
-				tokens.push_back(Token(TOKENTYPE_OPGTE, ">="));
+				tokens.push_back(Token(TOKENTYPE_OPGTE, ">=", lineNumber, index - lineStart));
 			}
 			else
 			{
-				tokens.push_back(Token(TOKENTYPE_OPGT, ">"));
+				tokens.push_back(Token(TOKENTYPE_OPGT, ">", lineNumber, index - lineStart));
 			}
 		}
 		else if (current == '+')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPADD, "+"));
+			tokens.push_back(Token(TOKENTYPE_OPADD, "+", lineNumber, index - lineStart));
 		}
 		else if (current == '*')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPMUL, "*"));
+			tokens.push_back(Token(TOKENTYPE_OPMUL, "*", lineNumber, index - lineStart));
 		}
 		else if (current == '/')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPDIV, "/"));
+			tokens.push_back(Token(TOKENTYPE_OPDIV, "/", lineNumber, index - lineStart));
 		}
 		else if (current == '%')
 		{
-			tokens.push_back(Token(TOKENTYPE_OPMOD, "%"));
+			tokens.push_back(Token(TOKENTYPE_OPMOD, "%", lineNumber, index - lineStart));
 		}
 		else
 		{
-			throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting A-Z, a-z, 0-9, '$', '_', '(', ')', '!', '&', '|', '^', '~', '-', '<', '>', '=', '+', '*', '/', '%'");
+			throw SyntaxError("Lexer: Line " + StringHelper_toString(lineNumber) + ", Col " + StringHelper_toString(index - lineStart) + ": Unexpected '" + current + "', expecting A-Z, a-z, 0-9, '.', '$', '_', '(', ')', '!', '&', '|', '^', '~', '-', '<', '>', '=', '+', '*', '/', '%'");
 		}
 		++index;
 	}
@@ -204,6 +230,11 @@ std::vector<Token> Lexer::Do()
 bool Lexer::hasNext()
 {
 	return index < length - 1;
+}
+
+char Lexer::getNext()
+{
+	return data[index + 1];
 }
 
 std::string Lexer::nextChar()
@@ -223,15 +254,39 @@ bool Lexer::nextIs(char what)
 	return hasNext() && data[index + 1] == what;
 }
 
-bool Lexer::isReserved(std::string &str)
+bool Lexer::nextIs(bool (*cond)(char))
 {
-	auto iter = std::find(reservedWords.begin(), reservedWords.end(), str);
-	return iter != reservedWords.end();
+	return hasNext() && cond(data[index + 1]);
+}
+
+TokenType Lexer::reservedWordType(std::string &str)
+{
+	if (str == "wandai")
+	{
+		return TOKENTYPE_WANDAI;
+	}
+	else if (str == "true")
+	{
+		return TOKENTYPE_TRUE;
+	}
+	else if (str == "false")
+	{
+		return TOKENTYPE_FALSE;
+	}
+	else
+	{
+		return TOKENTYPE_NOTTOKEN;
+	}
 }
 
 bool Lexer::isBlank(char a)
 {
 	return a == ' ' || a == '\n' || a == '\r' || a == '\t';
+}
+
+bool Lexer::isDigitFirst(char a)
+{
+	return (a >= '0' && a <= '9') || a == '.';
 }
 
 bool Lexer::isDigit(char a)
@@ -248,7 +303,6 @@ bool Lexer::isId(char a)
 {
 	return isIdFirst(a) || isDigit(a);
 }
-
 
 bool Lexer::isLetter(char a)
 {

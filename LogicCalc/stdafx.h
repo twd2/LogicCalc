@@ -18,3 +18,4 @@
 #include "PruningVisitor.h"
 #include "GenerateVisitor.h"
 #include "Matrix.h"
+#include "RuntimeError.h"

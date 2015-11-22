@@ -2,6 +2,7 @@
 
 enum TokenType
 {
+	TOKENTYPE_NOTTOKEN,
 	TOKENTYPE_ID, // [$_A-Za-z][$_A-Za-z0-9]*
 	TOKENTYPE_INTNUMBER, // [0-9]+
 	TOKENTYPE_FLOATNUMBER, //[0-9]+\.[0-9]* | \.[0-9]+
@@ -28,6 +29,9 @@ enum TokenType
 	TOKENTYPE_OPLT, // <
 	TOKENTYPE_OPLTE, // <=
 	TOKENTYPE_OPEQU, // ==
+	TOKENTYPE_OPDOT, // .
+	TOKENTYPE_TRUE, // true
+	TOKENTYPE_FALSE, // false
 	TOKENTYPE_WANDAI, // wandai
 	TOKENTYPE_EOF = -1
 };
@@ -37,14 +41,22 @@ class Token
 public:
 	TokenType Type;
 	std::string Value;
-	int LexerID, ID; //ID for TOKENTYPE_ID
-	int IntValue; //IntValue
-	double FloatValue; //TODO: FloatValue
+	int LexerID, ID; // ID for TOKENTYPE_ID
+	int IntValue; // IntValue
+	double FloatValue; // FloatValue
 
-	Token(TokenType type, std::string value) : Type(type), Value(value)
+	ptrdiff_t LineNumber, ColOfLine;
+
+	Token(TokenType type, std::string value) : Type(type), Value(value), LineNumber(-1), ColOfLine(-1)
+	{}
+
+	Token(TokenType type, std::string value, ptrdiff_t lineNumber, ptrdiff_t colOfLine) : Type(type), Value(value), LineNumber(lineNumber), ColOfLine(colOfLine)
 	{}
 
 	~Token();
+
+	bool operator==(Token &b);
+	bool operator!=(Token &b);
 };
 
 std::string Token_toName(TokenType);

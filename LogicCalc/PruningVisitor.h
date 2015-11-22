@@ -30,7 +30,9 @@ private:
 	static bool VisitModNode(ASTNode**);
 	static bool VisitNotNode(ASTNode**);
 	static bool VisitIDNode(ASTNode**);
-	static bool VisitNumberNode(ASTNode**);
+	static bool VisitIntNumberNode(ASTNode**);
+	static bool VisitTrueNode(ASTNode**);
+	static bool VisitFalseNode(ASTNode**);
 	static void CopyTo(ASTNode*, ASTNode**);
 	static void SetKnown(ASTNode*, int);
 

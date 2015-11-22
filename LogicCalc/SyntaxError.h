@@ -5,11 +5,11 @@
 class SyntaxError
 {
 public:
-	std::string why;
+	std::string what;
 
 	SyntaxError();
 
-	SyntaxError(std::string why) :why(why)
+	SyntaxError(std::string what) :what(what)
 	{}
 
 	~SyntaxError();
