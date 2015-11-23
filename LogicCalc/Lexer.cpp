@@ -84,6 +84,88 @@ std::vector<Token> Lexer::Do()
 				}
 			}
 		}
+		else if (current == '\'')
+		{
+			std::string ch;
+			ch += current;
+			bool escape = false, ended = false, gotten = false;
+			while (hasNext())
+			{
+				++index;
+				ch += data[index];
+				if (data[index] == '\\' && !escape)
+				{
+					escape = true;
+				}
+				else if (data[index] == '\'' && !escape)
+				{
+					ended = true;
+					break;
+				}
+				else if (!gotten)
+				{
+					gotten = true;
+					escape = false;
+				}
+				else // gotten!
+				{
+					// more than one char!
+					throw SyntaxError("Lexer: Unexpected '" + std::string(1, data[index]) + "', expecting '\\''");
+				}
+			}
+			
+			if (!gotten && !ended)
+			{
+				throw SyntaxError("Lexer: Unexpected EOF, expecting a char");
+			}
+			else if (gotten && !ended)
+			{
+				throw SyntaxError("Lexer: Unexpected EOF, expecting '\\''");
+			}
+			else if (!gotten && ended)
+			{
+				throw SyntaxError("Lexer: Unexpected '\\'', expecting a char");
+			}
+			else if (gotten && ended)
+			{
+				// right!
+			}
+
+			Token token(TOKENTYPE_CHARVALUE, ch, lineNumber, index - lineStart);
+			tokens.push_back(token);
+		}
+		else if (current == '\"')
+		{
+			std::string str;
+			str += current;
+			bool escape = false, ended = false;
+			while (hasNext())
+			{
+				++index;
+				str += data[index];
+				if (data[index] == '\\' && !escape)
+				{
+					escape = true;
+				}
+				else if (data[index] == '\"' && !escape)
+				{
+					ended = true;
+					break;
+				}
+				else
+				{
+					escape = false;
+				}
+			}
+
+			if (!ended)
+			{
+				throw SyntaxError("Lexer: Unexpected EOF, expecting '\\\"'");
+			}
+
+			Token token(TOKENTYPE_STRINGVALUE, str, lineNumber, index - lineStart);
+			tokens.push_back(token);
+		}
 		else if (current == '(')
 		{
 			tokens.push_back(Token(TOKENTYPE_LBRACKET, "(", lineNumber, index - lineStart));

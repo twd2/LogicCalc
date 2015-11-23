@@ -6,6 +6,8 @@ enum TokenType
 	TOKENTYPE_ID, // [$_A-Za-z][$_A-Za-z0-9]*
 	TOKENTYPE_INTNUMBER, // [0-9]+
 	TOKENTYPE_FLOATNUMBER, //[0-9]+\.[0-9]* | \.[0-9]+
+	TOKENTYPE_CHARVALUE, // '(\[\0anrt'"]|[\s\S])'
+	TOKENTYPE_STRINGVALUE, // "(\[\0anrt'"]|[\s\S]*)"
 	TOKENTYPE_LBRACKET, // (
 	TOKENTYPE_RBRACKET, // )
 	TOKENTYPE_OPNOT, // !
