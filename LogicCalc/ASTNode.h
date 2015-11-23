@@ -15,6 +15,9 @@ public:
 
 	~ASTNode();
 
+	bool operator==(const ASTNode&);
+	bool operator!=(const ASTNode&);
+
 private:
 
 

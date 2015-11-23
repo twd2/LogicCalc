@@ -222,7 +222,6 @@
   <ItemGroup>
     <ClInclude Include="AST.h" />
     <ClInclude Include="ASTNode.h" />
-    <ClInclude Include="CompareVisitor.h" />
     <ClInclude Include="IdGenerator.h" />
     <ClInclude Include="Lexer.h" />
     <ClInclude Include="Matrix.h" />
@@ -239,7 +238,6 @@
   <ItemGroup>
     <ClCompile Include="AST.cpp" />
     <ClCompile Include="ASTNode.cpp" />
-    <ClCompile Include="CompareVisitor.cpp" />
     <ClCompile Include="IdGenerator.cpp" />
     <ClCompile Include="Lexer.cpp" />
     <ClCompile Include="LogicCalc.cpp" />

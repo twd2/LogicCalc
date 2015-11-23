@@ -133,7 +133,7 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodePtr)
 		SetKnown(node, value);
 		return true;
 	}
-	else if (CompareVisitor::Compare(leftNode, rightNode)) //P<->P === 1
+	else if (*leftNode == *rightNode) //P<->P === 1
 	{
 		delete leftNode;
 		*leftNodePtr = leftNode = NULL;
@@ -275,7 +275,7 @@ bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 	}
 	else //!leftNodeKnown && !rightNodeKnown
 	{
-		if (CompareVisitor::Compare(leftNode, rightNode)) //P||P===P
+		if (*leftNode == *rightNode) //P||P===P
 		{
 			delete rightNode;
 			*rightNodePtr = rightNode = NULL;
@@ -283,7 +283,7 @@ bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 			return false;
 		}
 		else if (leftNode->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(leftNode->Nodes[0], rightNode)) //!P||P===1
+			*leftNode->Nodes[0] == *rightNode) //!P||P===1
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -294,7 +294,7 @@ bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 			return true;
 		}
 		else if (rightNode->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(rightNode->Nodes[0], leftNode)) //P||!P===1
+			*rightNode->Nodes[0] == *leftNode) //P||!P===1
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -305,8 +305,8 @@ bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 			return true;
 		}
 		else if (leftNode->token.Type == TOKENTYPE_OPAND &&
-			(CompareVisitor::Compare(leftNode->Nodes[0], rightNode) ||
-			CompareVisitor::Compare(leftNode->Nodes[1], rightNode))) //(P&&Q)||P===P, (Q&&P)||P===P
+			(*leftNode->Nodes[0] == *rightNode ||
+			*leftNode->Nodes[1] == *rightNode)) //(P&&Q)||P===P, (Q&&P)||P===P
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -314,8 +314,8 @@ bool PruningVisitor::VisitOrNode(ASTNode **nodePtr)
 			return false;
 		}
 		else if (rightNode->token.Type == TOKENTYPE_OPAND &&
-			(CompareVisitor::Compare(rightNode->Nodes[0], leftNode) ||
-			CompareVisitor::Compare(rightNode->Nodes[1], leftNode))) //P||(P&&Q)===P, P||(Q&&P)===P
+			(*rightNode->Nodes[0] == *leftNode ||
+			*rightNode->Nodes[1] == *leftNode)) //P||(P&&Q)===P, P||(Q&&P)===P
 		{
 			delete rightNode;
 			*rightNodePtr = rightNode = NULL;
@@ -351,7 +351,7 @@ bool PruningVisitor::VisitXorNode(ASTNode **nodePtr)
 		SetKnown(node, value);
 		return true;
 	}
-	else if (CompareVisitor::Compare(leftNode, rightNode)) //P^^P === 0
+	else if (*leftNode == *rightNode) //P^^P === 0
 	{
 		delete leftNode;
 		*leftNodePtr = leftNode = NULL;
@@ -461,7 +461,7 @@ bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 	}
 	else
 	{
-		if (CompareVisitor::Compare(leftNode, rightNode)) //P&&P===P
+		if (*leftNode == *rightNode) //P&&P===P
 		{
 			delete rightNode;
 			*rightNodePtr = rightNode = NULL;
@@ -469,7 +469,7 @@ bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 			return false;
 		}
 		else if (leftNode->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(leftNode->Nodes[0], rightNode)) //!P&&P===0
+			*leftNode->Nodes[0] == *rightNode) //!P&&P===0
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -480,7 +480,7 @@ bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 			return true;
 		}
 		else if (rightNode->token.Type == TOKENTYPE_OPNOT &&
-			CompareVisitor::Compare(rightNode->Nodes[0], leftNode)) //P&&!P===0
+			*rightNode->Nodes[0] == *leftNode) //P&&!P===0
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -491,8 +491,8 @@ bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 			return true;
 		}
 		else if (leftNode->token.Type == TOKENTYPE_OPOR &&
-			(CompareVisitor::Compare(leftNode->Nodes[0], rightNode) ||
-			CompareVisitor::Compare(leftNode->Nodes[1], rightNode))) //(P||Q)&&P===P, (Q||P)&&P===P
+			(*leftNode->Nodes[0] == *rightNode ||
+			*leftNode->Nodes[1] == *rightNode)) //(P||Q)&&P===P, (Q||P)&&P===P
 		{
 			delete leftNode;
 			*leftNodePtr = leftNode = NULL;
@@ -500,8 +500,8 @@ bool PruningVisitor::VisitAndNode(ASTNode **nodePtr)
 			return false;
 		}
 		else if (rightNode->token.Type == TOKENTYPE_OPOR &&
-			(CompareVisitor::Compare(rightNode->Nodes[0], leftNode) ||
-			CompareVisitor::Compare(rightNode->Nodes[1], leftNode))) //P&&(P||Q)===P, P&&(Q||P)===P
+			(*rightNode->Nodes[0] == *leftNode ||
+			*rightNode->Nodes[1] == *leftNode)) //P&&(P||Q)===P, P&&(Q||P)===P
 		{
 			delete rightNode;
 			*rightNodePtr = rightNode = NULL;

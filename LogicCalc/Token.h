@@ -55,8 +55,8 @@ public:
 
 	~Token();
 
-	bool operator==(Token &b);
-	bool operator!=(Token &b);
+	bool operator==(const Token &b);
+	bool operator!=(const Token &b);
 };
 
 std::string Token_toName(TokenType);

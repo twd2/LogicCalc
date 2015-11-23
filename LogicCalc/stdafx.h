@@ -14,7 +14,6 @@
 #include <iostream>
 #include "Lexer.h"
 #include "Parser.h"
-#include "CompareVisitor.h"
 #include "PruningVisitor.h"
 #include "GenerateVisitor.h"
 #include "Matrix.h"
