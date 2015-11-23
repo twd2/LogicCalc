@@ -107,7 +107,7 @@ std::vector<Token> Lexer::Do()
 					gotten = true;
 					escape = false;
 				}
-				else // gotten!
+				else // already gotten!
 				{
 					// more than one char!
 					throw SyntaxError("Lexer: Unexpected '" + std::string(1, data[index]) + "', expecting '\\''");

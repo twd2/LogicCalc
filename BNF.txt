@@ -64,6 +64,8 @@ not_expr : OPNOT not_expr
 factor : ID
        | INTNUMBER
        | FLOATNUMBER
+       | CHARVALUE
+       | STRINGVALUE
        | TRUE
        | FALSE
        | LBRACKET expr RBRACKET

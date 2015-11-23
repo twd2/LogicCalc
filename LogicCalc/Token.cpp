@@ -6,12 +6,12 @@ Token::~Token()
 
 }
 
-bool Token::operator==(const Token & b)
+bool Token::operator==(const Token &b)
 {
 	return Value == b.Value && Type == b.Type;
 }
 
-bool Token::operator!=(const Token & b)
+bool Token::operator!=(const Token &b)
 {
 	return !(*this == b);
 }
