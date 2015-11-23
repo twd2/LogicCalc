@@ -144,6 +144,7 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodePtr)
 		SetKnown(node, 1);
 		return true;
 	}
+	// TODO: !P<->P === 0, P<->!P === 0
 	else if ((leftNodeKnown && leftNode->Value == 0)) //0<->x === !x
 	{
 		delete leftNode;

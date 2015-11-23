@@ -52,13 +52,13 @@ addsub_expr : muldivmod_rest addsub_rest
 addsub_rest : (OPADD|OPSUB) muldivmod_rest addsub_rest
             | eps
 
-muldivmod_expr : not_expr muldivmod_rest
+muldivmod_expr : unary_expr muldivmod_rest
             
-muldivmod_rest : (OPMUL|OPDIV|OPMOD) not_expr muldivmod_rest
+muldivmod_rest : (OPMUL|OPDIV|OPMOD) unary_expr muldivmod_rest
                | eps
 
-not_expr : OPNOT not_expr
-         | OPBITNOT not_expr
+unary_expr : OPNOT unary_expr
+         | OPBITNOT unary_expr
          | factor
 
 factor : ID

@@ -46,7 +46,7 @@ AST* Parser::Parse()
 
 ASTNode* Parser::expr()
 {
-	return tauimp_expr();
+	return dualimp_expr();
 }
 
 ASTNode* Parser::tauimp_expr()
