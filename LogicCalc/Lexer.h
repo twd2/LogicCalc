@@ -33,12 +33,14 @@ public:
 private:
 	std::string &data;
 
-	size_t length;
+	size_t length = 0;
 	size_t index = 0;
+	ptrdiff_t lineNumber = 1, lineStart = -1, tokenStart = 0;
 
 	bool hasNext();
 	char getNext();
 	std::string nextChar();
 	bool nextIs(char);
 	bool nextIs(bool(*)(char));
+	SyntaxError Error(std::string, std::string);
 };

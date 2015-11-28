@@ -59,6 +59,8 @@ muldivmod_rest : (OPMUL|OPDIV|OPMOD) unary_expr muldivmod_rest
 
 unary_expr : OPNOT unary_expr
          | OPBITNOT unary_expr
+         | OPADD unary_expr
+         | OPSUB unary_expr
          | factor
 
 factor : ID

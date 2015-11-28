@@ -8,7 +8,6 @@ Lexer::~Lexer()
 
 std::vector<Token> Lexer::Do()
 {
-	ptrdiff_t lineNumber = 1, lineStart = -1;
 	std::vector<Token> tokens;
 	while (index < length)
 	{
@@ -110,21 +109,21 @@ std::vector<Token> Lexer::Do()
 				else // already gotten!
 				{
 					// more than one char!
-					throw SyntaxError("Lexer: Unexpected '" + std::string(1, data[index]) + "', expecting '\\''");
+					throw Error("'" + std::string(1, data[index]) + "'", "'\\''");
 				}
 			}
 			
 			if (!gotten && !ended)
 			{
-				throw SyntaxError("Lexer: Unexpected EOF, expecting a char");
+				throw Error("EOF", "a char");
 			}
 			else if (gotten && !ended)
 			{
-				throw SyntaxError("Lexer: Unexpected EOF, expecting '\\''");
+				throw Error("EOF", "'\\''");
 			}
 			else if (!gotten && ended)
 			{
-				throw SyntaxError("Lexer: Unexpected '\\'', expecting a char");
+				throw Error("'\\''", "a char");
 			}
 			else if (gotten && ended)
 			{
@@ -160,7 +159,7 @@ std::vector<Token> Lexer::Do()
 
 			if (!ended)
 			{
-				throw SyntaxError("Lexer: Unexpected EOF, expecting '\\\"'");
+				throw Error("EOF", "'\\\"'");
 			}
 
 			Token token(TOKENTYPE_STRINGVALUE, str, lineNumber, index - lineStart);
@@ -247,7 +246,7 @@ std::vector<Token> Lexer::Do()
 				}
 				else
 				{
-					throw SyntaxError("Lexer: Unexpected " + nextChar() + ", expecting '>'");
+					throw Error(nextChar(), "'>'");
 				}
 			}
 			else
@@ -269,7 +268,7 @@ std::vector<Token> Lexer::Do()
 			}
 			else
 			{
-				throw SyntaxError("Lexer: Line " + StringHelper_toString(lineNumber) + ", Col " + StringHelper_toString(index - lineStart + 1) + ": Unexpected " + nextChar() + ", expecting '>', '='");
+				throw Error(nextChar(), "'>', '='");
 			}
 		}
 		else if (current == '>')
@@ -302,7 +301,7 @@ std::vector<Token> Lexer::Do()
 		}
 		else
 		{
-			throw SyntaxError("Lexer: Line " + StringHelper_toString(lineNumber) + ", Col " + StringHelper_toString(index - lineStart) + ": Unexpected '" + current + "', expecting A-Z, a-z, 0-9, '.', '$', '_', '(', ')', '!', '&', '|', '^', '~', '-', '<', '>', '=', '+', '*', '/', '%'");
+			throw Error(std::string() + "'" + current + "'", "A-Z, a-z, 0-9, '.', '$', '_', '(', ')', '!', '&', '|', '^', '~', '-', '<', '>', '=', '+', '*', '/', '%'");
 		}
 		++index;
 	}
@@ -339,6 +338,11 @@ bool Lexer::nextIs(char what)
 bool Lexer::nextIs(bool (*cond)(char))
 {
 	return hasNext() && cond(data[index + 1]);
+}
+
+SyntaxError Lexer::Error(std::string unexp, std::string exp)
+{
+	return SyntaxError("Lexer: Unexpected " + unexp + ", expecting " + exp + ".", lineNumber, index - lineStart);
 }
 
 TokenType Lexer::reservedWordType(std::string &str)

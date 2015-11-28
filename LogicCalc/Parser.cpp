@@ -113,6 +113,8 @@ ASTNode* Parser::unary_expr()
 	{
 	case TOKENTYPE_OPNOT:
 	case TOKENTYPE_OPBITNOT:
+	case TOKENTYPE_OPADD:
+	case TOKENTYPE_OPSUB:
 	{
 		node = new ASTNode(token);
 		match(token.Type);
