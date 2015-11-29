@@ -3,7 +3,8 @@
 enum NodeType
 {
 	NODETYPE_POSITIVE, // positive
-	NODETYPE_NEGATIVE // negative
+	NODETYPE_NEGATIVE, // negative
+	// TODO: types
 };
 
 class ASTNode
@@ -14,8 +15,8 @@ public:
 
 	NodeType Type;
 
-	int Value = 0; //值
-	bool Known = false; //是否已经知道了值
+	int Value = 0; // known value
+	bool Known = false; // value is known?
 
 	std::vector<ASTNode*> Nodes;
 
