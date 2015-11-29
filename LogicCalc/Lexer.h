@@ -17,7 +17,7 @@ public:
 	}
 
 	~Lexer();
-	std::vector<Token> Do();
+	std::vector<Token> Do(bool);
 	IdGenerator Ids;
 
 	static TokenType Lexer::reservedWordType(std::string&);

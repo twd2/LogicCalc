@@ -60,7 +60,15 @@ std::string Token::Name(TokenType type)
 		names[TOKENTYPE_OPDOT] = "OPDOT";
 		names[TOKENTYPE_TRUE] = "TRUE";
 		names[TOKENTYPE_FALSE] = "FALSE";
+		names[TOKENTYPE_FOR] = "FOR";
+		names[TOKENTYPE_IF] = "IF";
+		names[TOKENTYPE_WHILE] = "WHILE";
+		names[TOKENTYPE_BREAK] = "BREAK";
+		names[TOKENTYPE_CONTINUE] = "CONTINUE";
+		names[TOKENTYPE_ELSE] = "ELSE";
+		names[TOKENTYPE_RETURN] = "RETURN";
 		names[TOKENTYPE_WANDAI] = "WANDAI";
+		names[TOKENTYPE_COMMENT] = "COMMENT";
 		names[TOKENTYPE_EOF] = "EOF";
 	}
 

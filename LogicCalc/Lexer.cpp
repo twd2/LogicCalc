@@ -6,7 +6,7 @@ Lexer::~Lexer()
 
 }
 
-std::vector<Token> Lexer::Do()
+std::vector<Token> Lexer::Do(bool preserveComments)
 {
 	std::vector<Token> tokens;
 	while (index < length)
@@ -82,6 +82,18 @@ std::vector<Token> Lexer::Do()
 					tokens.push_back(token);
 				}
 			}
+		}
+		else if (current == ',')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_OPCOMMA, ","));
+		}
+		else if (current == ':')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_OPCOLON, ":"));
+		}
+		else if (current == ';')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_OPSEMICOLON, ";"));
 		}
 		else if (current == '\'')
 		{
@@ -170,6 +182,22 @@ std::vector<Token> Lexer::Do()
 		else if (current == ')')
 		{
 			tokens.push_back(MakeToken(TOKENTYPE_RROUNDBRACKET, ")"));
+		}
+		else if (current == '[')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_LSQUAREBRACKET, "["));
+		}
+		else if (current == ']')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_RSQUAREBRACKET, "]"));
+		}
+		else if (current == '{')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_LBRACE, "{"));
+		}
+		else if (current == '}')
+		{
+			tokens.push_back(MakeToken(TOKENTYPE_RBRACE, "}"));
 		}
 		else if (current == '!')
 		{
@@ -299,7 +327,51 @@ std::vector<Token> Lexer::Do()
 		}
 		else if (current == '/')
 		{
-			tokens.push_back(MakeToken(TOKENTYPE_OPDIV, "/"));
+			if (nextIs('/'))
+			{
+				++index;
+				std::string comment = "//";
+				while (hasNext() && !nextIs('\n'))
+				{
+					++index;
+					comment += data[index];
+				}
+				if (preserveComments)
+				{
+					tokens.push_back(MakeToken(TOKENTYPE_COMMENT, comment));
+				}
+			}
+			else if (nextIs('*'))
+			{
+				++index;
+				std::string comment = "/*";
+				bool ended = false;
+				while (hasNext())
+				{
+					++index;
+					comment += data[index];
+					if (data[index] == '*' && nextIs('/'))
+					{
+						++index;
+						comment += data[index];
+						ended = true;
+						break;
+					}
+				}
+				if (!ended)
+				{
+					throw Error("EOF", "\"*/\"");
+				}
+
+				if (preserveComments)
+				{
+					tokens.push_back(MakeToken(TOKENTYPE_COMMENT, comment));
+				}
+			}
+			else
+			{
+				tokens.push_back(MakeToken(TOKENTYPE_OPDIV, "/"));
+			}
 		}
 		else if (current == '%')
 		{
@@ -370,6 +442,34 @@ TokenType Lexer::reservedWordType(std::string &str)
 	else if (str == "false")
 	{
 		return TOKENTYPE_FALSE;
+	}
+	else if (str == "for")
+	{
+		return TOKENTYPE_FOR;
+	}
+	else if (str == "if")
+	{
+		return TOKENTYPE_IF;
+	}
+	else if (str == "while")
+	{
+		return TOKENTYPE_WHILE;
+	}
+	else if (str == "break")
+	{
+		return TOKENTYPE_BREAK;
+	}
+	else if (str == "continue")
+	{
+		return TOKENTYPE_CONTINUE;
+	}
+	else if (str == "else")
+	{
+		return TOKENTYPE_ELSE;
+	}
+	else if (str == "return")
+	{
+		return TOKENTYPE_RETURN;
 	}
 	else
 	{

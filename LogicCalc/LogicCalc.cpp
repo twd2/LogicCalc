@@ -6,7 +6,7 @@
 std::pair<std::vector<Token>, IdGenerator> compile(std::string data)
 {
 	Lexer lexer(data);
-	std::vector<Token> &tokens = lexer.Do();
+	std::vector<Token> &tokens = lexer.Do(false);
 
 	Parser parser(tokens);
 	AST *ast = parser.Parse();

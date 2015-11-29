@@ -43,7 +43,15 @@ enum TokenType
 	TOKENTYPE_OPSEMICOLON, // ;
 	TOKENTYPE_TRUE, // true
 	TOKENTYPE_FALSE, // false
+	TOKENTYPE_FOR, // for
+	TOKENTYPE_IF, // if
+	TOKENTYPE_WHILE, // while
+	TOKENTYPE_BREAK, // break
+	TOKENTYPE_CONTINUE, // continue
+	TOKENTYPE_ELSE, // else
+	TOKENTYPE_RETURN, // return
 	TOKENTYPE_WANDAI, // wandai
+	TOKENTYPE_COMMENT, // //xxx /*xxx*/
 	TOKENTYPE_EOF = -1
 };
 
