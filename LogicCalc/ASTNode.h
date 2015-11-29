@@ -1,9 +1,18 @@
 #pragma once
+
+enum NodeType
+{
+	NODETYPE_POSITIVE, // positive
+	NODETYPE_NEGATIVE // negative
+};
+
 class ASTNode
 {
 public:
 
 	Token token;
+
+	NodeType Type;
 
 	int Value = 0; //值
 	bool Known = false; //是否已经知道了值

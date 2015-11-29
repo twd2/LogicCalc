@@ -144,7 +144,28 @@ bool PruningVisitor::VisitDualimpNode(ASTNode **nodePtr)
 		SetKnown(node, 1);
 		return true;
 	}
-	// TODO: !P<->P === 0, P<->!P === 0
+	else if (leftNode->token.Type == TOKENTYPE_OPNOT &&
+		*leftNode->Nodes[0] == *rightNode) //!P<->P === 0
+	{
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
+		SetKnown(node, 0);
+		return true;
+	}
+	else if (rightNode->token.Type == TOKENTYPE_OPNOT &&
+		*rightNode->Nodes[0] == *leftNode) //P<->!P === 0
+	{
+		delete leftNode;
+		*leftNodePtr = leftNode = NULL;
+		delete rightNode;
+		*rightNodePtr = rightNode = NULL;
+		node->Nodes.clear();
+		SetKnown(node, 0);
+		return true;
+	}
 	else if ((leftNodeKnown && leftNode->Value == 0)) //0<->x === !x
 	{
 		delete leftNode;
@@ -680,7 +701,7 @@ bool PruningVisitor::VisitBitandNode(ASTNode **nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitAddNode(ASTNode**nodePtr)
+bool PruningVisitor::VisitAddNode(ASTNode **nodePtr)
 {
 	ASTNode *node = *nodePtr;
 
@@ -709,7 +730,7 @@ bool PruningVisitor::VisitAddNode(ASTNode**nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitSubNode(ASTNode**nodePtr)
+bool PruningVisitor::VisitSubNode(ASTNode **nodePtr)
 {
 	ASTNode *node = *nodePtr;
 
@@ -738,7 +759,7 @@ bool PruningVisitor::VisitSubNode(ASTNode**nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitMulNode(ASTNode**nodePtr)
+bool PruningVisitor::VisitMulNode(ASTNode **nodePtr)
 {
 	ASTNode *node = *nodePtr;
 
@@ -767,7 +788,7 @@ bool PruningVisitor::VisitMulNode(ASTNode**nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitDivNode(ASTNode**nodePtr)
+bool PruningVisitor::VisitDivNode(ASTNode **nodePtr)
 {
 	ASTNode *node = *nodePtr;
 
@@ -800,7 +821,7 @@ bool PruningVisitor::VisitDivNode(ASTNode**nodePtr)
 	return false;
 }
 
-bool PruningVisitor::VisitModNode(ASTNode**nodePtr)
+bool PruningVisitor::VisitModNode(ASTNode **nodePtr)
 {
 	ASTNode *node = *nodePtr;
 
@@ -888,11 +909,11 @@ bool PruningVisitor::VisitFalseNode(ASTNode **nodePtr)
 	return true;
 }
 
-void PruningVisitor::CopyTo(ASTNode *srcptr, ASTNode **targetptr)
+void PruningVisitor::CopyTo(ASTNode *srcPtr, ASTNode **targetPtr)
 {
-	(*targetptr)->Nodes.clear(); //to avoid delete sub nodes
-	delete (*targetptr); 
-	*targetptr = srcptr;
+	(*targetPtr)->Nodes.clear(); //to avoid delete sub nodes
+	delete (*targetPtr); 
+	*targetPtr = srcPtr;
 }
 
 void PruningVisitor::SetKnown(ASTNode *node, int value)
