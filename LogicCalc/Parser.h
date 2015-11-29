@@ -12,7 +12,7 @@
 class Parser
 {
 public:
-	Parser(std::vector<Token> &tokens): tokens(tokens)
+	Parser(const std::vector<Token> &tokens): tokens(tokens)
 	{ 
 		length = tokens.size();
 	}
@@ -40,19 +40,23 @@ private:
 
 	Token EOFToken = Token(TOKENTYPE_EOF, "EOF");
 
-	std::vector<Token> &tokens;
+	const std::vector<Token> &tokens;
 
 	size_t length;
 	size_t index = 0;
 
 	void match(TokenType);
 
-	Token &getToken();
+	const Token &getToken();
 
 	bool hasNext();
 	std::string tokenString();
+	std::string tokenString(const Token&);
 	std::string nextToken();
 	bool nextIs(TokenType);
+
+	SyntaxError Error(std::string);
+	SyntaxError Error(const Token&, std::string);
 
 };
 

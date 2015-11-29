@@ -16,7 +16,7 @@ bool Token::operator!=(const Token &b)
 	return !(*this == b);
 }
 
-std::string Token_toName(TokenType type)
+std::string Token::Name(TokenType type)
 {
 	static std::map<TokenType, std::string> names;
 	if (names[TOKENTYPE_EOF] == "")
@@ -26,8 +26,14 @@ std::string Token_toName(TokenType type)
 		names[TOKENTYPE_ID] = "ID";
 		names[TOKENTYPE_INTNUMBER] = "INTNUMBER";
 		names[TOKENTYPE_FLOATNUMBER] = "FLOATNUMBER";
-		names[TOKENTYPE_LBRACKET] = "LBRACKET";
-		names[TOKENTYPE_RBRACKET] = "RBRACKET";
+		names[TOKENTYPE_CHARVALUE] = "CHARVALUE";
+		names[TOKENTYPE_STRINGVALUE] = "STRINGVALUE";
+		names[TOKENTYPE_LROUNDBRACKET] = "LBRACKET";
+		names[TOKENTYPE_RROUNDBRACKET] = "RBRACKET";
+		names[TOKENTYPE_LSQUAREBRACKET] = "LSQUAREBRACKET";
+		names[TOKENTYPE_RSQUAREBRACKET] = "RSQUAREBRACKET";
+		names[TOKENTYPE_LBRACE] = "LBRACE";
+		names[TOKENTYPE_RBRACE] = "RBRACE";
 		names[TOKENTYPE_OPNOT] = "OPNOT";
 		names[TOKENTYPE_OPAND] = "OPAND";
 		names[TOKENTYPE_OPOR] = "OPOR";
@@ -48,7 +54,9 @@ std::string Token_toName(TokenType type)
 		names[TOKENTYPE_OPGTE] = "OPGTE";
 		names[TOKENTYPE_OPLT] = "OPLT";
 		names[TOKENTYPE_OPLTE] = "OPLTE";
+		names[TOKENTYPE_OPLET] = "OPLET";
 		names[TOKENTYPE_OPEQU] = "OPEQU";
+		names[TOKENTYPE_OPNEQU] = "OPNEQU";
 		names[TOKENTYPE_OPDOT] = "OPDOT";
 		names[TOKENTYPE_TRUE] = "TRUE";
 		names[TOKENTYPE_FALSE] = "FALSE";

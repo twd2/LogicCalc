@@ -43,4 +43,5 @@ private:
 	bool nextIs(char);
 	bool nextIs(bool(*)(char));
 	SyntaxError Error(std::string, std::string);
+	Token MakeToken(TokenType, std::string);
 };

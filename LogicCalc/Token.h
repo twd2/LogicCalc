@@ -8,8 +8,12 @@ enum TokenType
 	TOKENTYPE_FLOATNUMBER, //[0-9]+\.[0-9]* | \.[0-9]+
 	TOKENTYPE_CHARVALUE, // '(\[\0anrt'"]|[\s\S])'
 	TOKENTYPE_STRINGVALUE, // "(\[\0anrt'"]|[\s\S]*)"
-	TOKENTYPE_LBRACKET, // (
-	TOKENTYPE_RBRACKET, // )
+	TOKENTYPE_LROUNDBRACKET, // (
+	TOKENTYPE_RROUNDBRACKET, // )
+	TOKENTYPE_LSQUAREBRACKET, // [
+	TOKENTYPE_RSQUAREBRACKET, // ]
+	TOKENTYPE_LBRACE, // {
+	TOKENTYPE_RBRACE, // }
 	TOKENTYPE_OPNOT, // !
 	TOKENTYPE_OPAND, // &&
 	TOKENTYPE_OPOR, // ||
@@ -30,8 +34,13 @@ enum TokenType
 	TOKENTYPE_OPGTE, // >=
 	TOKENTYPE_OPLT, // <
 	TOKENTYPE_OPLTE, // <=
+	TOKENTYPE_OPLET, // =
 	TOKENTYPE_OPEQU, // ==
+	TOKENTYPE_OPNEQU, // !=
 	TOKENTYPE_OPDOT, // .
+	TOKENTYPE_OPCOMMA, // ,
+	TOKENTYPE_OPCOLON, // :
+	TOKENTYPE_OPSEMICOLON, // ;
 	TOKENTYPE_TRUE, // true
 	TOKENTYPE_FALSE, // false
 	TOKENTYPE_WANDAI, // wandai
@@ -42,23 +51,25 @@ class Token
 {
 public:
 	TokenType Type;
-	std::string Value;
 	int LexerID, ID; // ID for TOKENTYPE_ID
+	std::string Value; // raw string / StringValue / CharValue
 	int IntValue; // IntValue
 	double FloatValue; // FloatValue
 
-	ptrdiff_t LineNumber, ColOfLine;
+	ptrdiff_t LineNumber, ColumnStart, ColumnEnd;
 
-	Token(TokenType type, std::string value) : Type(type), Value(value), LineNumber(-1), ColOfLine(-1)
+	Token(TokenType type, std::string value)
+		: Type(type), Value(value), LineNumber(-1), ColumnStart(-1), ColumnEnd(-1)
 	{}
 
-	Token(TokenType type, std::string value, ptrdiff_t lineNumber, ptrdiff_t colOfLine) : Type(type), Value(value), LineNumber(lineNumber), ColOfLine(colOfLine)
+	Token(TokenType type, std::string value, ptrdiff_t lineNumber, ptrdiff_t columnStart, ptrdiff_t columnEnd) 
+		: Type(type), Value(value), LineNumber(lineNumber), ColumnStart(columnStart), ColumnEnd(columnEnd)
 	{}
 
 	~Token();
 
 	bool operator==(const Token &b);
 	bool operator!=(const Token &b);
-};
 
-std::string Token_toName(TokenType);
+	static std::string Token::Name(TokenType);
+};
